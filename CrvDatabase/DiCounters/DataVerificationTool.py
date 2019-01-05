@@ -12,6 +12,7 @@
 ##08/20/2018 - Finished debugging added source analysis tools for local file
 ##08/22/2018 - Finished debugging added source analysis tools for database and added sn retrieval tools
 ##08/24/2018 - Added functions to retrieve sns by crate # and that are not in modules already
+##01/04/2019 - Debugged different length flagging tool
 
 
 #------------------------------------------------------------------------------------------------------------
@@ -610,7 +611,7 @@ def sourceQA_local(inFilename = ""):
                     data[sn][2][channel] = float(lnComponents[15 + channel]) #Crystal readouts to strong
  
                 #Flag different lengths
-                if prevLen == 0:
+                if prevLen == 0 and sn != "1140":
                     prevLen = float(lnComponents[4]) + 100
                 else:
                     if abs(float(lnComponents[4]) + 100 - prevLen) > 2:
@@ -721,7 +722,7 @@ def sourceQA_database(sns):
             dt = datetime.strptime(components[5][:16],"%Y-%m-%d %H:%M")
             dates.append(dt.date())
 
-            if sn == "1140":
+            if sn == 1140:
                 continue
 
             if lightSource == "led": #If result not a source measurement
@@ -775,7 +776,7 @@ def sourceQA_database(sns):
                            data[sn][0][10] = float(components[6]) #Store temp 
                            
                         #Flag different lengths
-                        if prevLen == 0:
+                        if prevLen == 0 and sn != "1140":
                             prevLen = sourcePos + 100
                         else:
                             if abs(sourcePos + 100 - prevLen) > 2:
