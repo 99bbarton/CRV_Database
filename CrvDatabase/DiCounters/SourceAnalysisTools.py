@@ -4,6 +4,7 @@
 ##bb6yx@virginia.edu, 99bbarton@gmail.com
 ##540-355-8918
 ##08/20/18 - Debugged initial version complete
+##01/04/19 - Debugged issue where weak-side values were not added to data lists when all source positions were selected
 
 import ROOT
 
@@ -200,10 +201,10 @@ def plotOverlaid(hists, pad = 1):
             hists[2].Draw("same")
     if len(hists) >= 4:
         if hists[3].GetEntries() > 0:
-            hists[3].SetLineColor(5) #Yellow
+            hists[3].SetLineColor(8) #Green
             hists[3].Draw("same")
 
-    #Add in legend ##################################################################################
+    canvas.BuildLegend()
 
     canvas.Update()
 
@@ -225,6 +226,15 @@ def plotSourceData(params, sns, data, goldens):
     d2s = []
     d3s = []
     d4s = [] 
+    #Arrays to store processed values if data from all source positions will be used - needed for proper normalization
+    w_a1s = []
+    w_a2s = []
+    w_a3s = []
+    w_a4s = []
+    w_b1s = []
+    w_b2s = []
+    w_b3s = []
+    w_b4s = []
     #Temporary arrays for processing
     vals = []
     golds = []
@@ -403,6 +413,12 @@ def plotSourceData(params, sns, data, goldens):
                         for i in range(0,4):
                             golds.append(goldens[date][0][6 + i] - goldens[date][0][12 + i])
                             vals[4 + i] = vals[4 + i] / golds[4 + i]
+
+                #Store the weak values separately so they can be normalized independently
+                w_a1s.append(vals[4])
+                w_a2s.append(vals[5])
+                w_a3s.append(vals[6])
+                w_a4s.append(vals[7])
         
             #Store values to arrays and clear temporary arrays
             a1s.append(vals[0])
@@ -527,11 +543,13 @@ def plotSourceData(params, sns, data, goldens):
                 for i in range(0,4): #Strong values
                     vals.append(data[sn][1][i])
                     crysts.append(data[sn][2][i])
+            
                 if data[sn][1][6] < 0:
                     print "WARNING: Missing weak B-side data for " + str(sn) + " - skipping"
                     continue
                 for i in range(0,4): #Weak values
                     vals.append(data[sn][1][6 + i])
+                
                 
                 if params[3] == "Y": #Subtract out dark current
                     if data[sn][1][12] == -1:
@@ -582,7 +600,12 @@ def plotSourceData(params, sns, data, goldens):
                         for i in range(0,4):
                             golds.append(goldens[date][1][6 + i] - goldens[date][1][12 + i])
                             vals[4 + i] = vals[4 + i] / golds[4 + i]
-        
+                #Store the weak values separately so they can be normalized independently
+                w_b1s.append(vals[4])
+                w_b2s.append(vals[5])
+                w_b3s.append(vals[6])
+                w_b4s.append(vals[7])
+
             #Store values to arrays and clear temporary arrays
             b1s.append(vals[0])
             b2s.append(vals[1])
@@ -632,7 +655,29 @@ def plotSourceData(params, sns, data, goldens):
         d2s = normalize(d2s)
         d3s = normalize(d3s)
         d4s = normalize(d4s)
+
+        if params[1] == "ALL": #If data from all source positions is needed, weak and strong normalized separately
+            w_a1s = normalize(w_a1s)
+            w_a2s = normalize(w_a2s)
+            w_a3s = normalize(w_a3s)
+            w_a4s = normalize(w_a4s)
+            w_b1s = normalize(w_b1s)
+            w_b2s = normalize(w_b2s)
+            w_b3s = normalize(w_b3s)
+            w_b4s = normalize(w_b4s)
+
+
+    if params[1] == "ALL": #If all source positions, combine strong and weak data
+        a1s.extend(w_a1s)
+        a2s.extend(w_a2s)
+        a3s.extend(w_a3s)
+        a4s.extend(w_a4s)
+        b1s.extend(w_b1s)
+        b2s.extend(w_b2s)
+        b3s.extend(w_b3s)
+        b4s.extend(w_b4s)
     
+
     #Initialize and plot histograms
     if params[0] == "A" or params[0] == "ALL":
         if params[2] == "N": #Don't plot by channel
@@ -718,7 +763,7 @@ def plotSourceData(params, sns, data, goldens):
             histograms.extend(hists)
     hists = []
     
-    if params[0] == "BOTH" or params[0] == "ALL":
+    if params[0] == "BOTH" or params[0] == "ALL":            
         if params[2] == "N": #Don't plot by channel
             both = a1s + a2s + a3s + a4s + b1s + b2s + b3s + b4s
             bothHist = initializeHist("Di-Counter Response", "All Channels", both, params)
