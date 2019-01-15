@@ -13,6 +13,7 @@
 ##08/22/2018 - Finished debugging added source analysis tools for database and added sn retrieval tools
 ##08/24/2018 - Added functions to retrieve sns by crate # and that are not in modules already
 ##01/04/2019 - Debugged different length flagging tool
+##01/15/2019 - Corrected mode elif block to associate 3 with transmission data
 
 
 #------------------------------------------------------------------------------------------------------------
@@ -1320,7 +1321,7 @@ def main(args):
         if checkLocal:
             if mode == 2:
                fileLines =  sourceQA_local()
-            elif mode == 2:
+            elif mode == 3:
                 checkTransmissionQA_local()
         
         if checkDB:
