@@ -5,6 +5,7 @@
 ##540-355-8918
 ##08/20/18 - Debugged initial version complete
 ##01/04/19 - Debugged issue where weak-side values were not added to data lists when all source positions were selected
+##01/22/19 - Added code to associate SNs with data lists and print out underperforming channels
 
 import ROOT
 
@@ -79,8 +80,7 @@ def getPlotParameters():
         params.append("ALL")
 
     #By channel?
-    print "\nWould you like data plotted by channel?"
-    print 'Enter "y" or "n":'
+    print "\nWould you like data plotted by channel? (Y/N)"
     inp = raw_input()
     if inp.upper() == "Y":
         print 'Enter which channels you wish to be plotted as a combination of the numbers 1-4'
@@ -92,8 +92,7 @@ def getPlotParameters():
 
     #Subtract dark current?
     if params[0] != "DARK":
-        print "\nWould you like dark current to be subtracted from current values?"
-        print 'Enter "y" or "n":'
+        print "\nWould you like dark current to be subtracted from current values? (Y/N)"
         inp = raw_input()
         if inp.upper() == "Y":
             params.append("Y")
@@ -103,8 +102,7 @@ def getPlotParameters():
         params.append("N")
 
     #Correct to crystals?
-    print "\nWould you like values corrected to crystals?"
-    print 'Enter "y" or "n":'
+    print "\nWould you like values corrected to crystals? (Y/N)"
     inp = raw_input()
     if inp.upper() == "Y":
         params.append("Y")
@@ -113,8 +111,7 @@ def getPlotParameters():
         params.append("N")
 
         #Correct to temperature?
-        print "\nWould you like values corrected only for temperature?"
-        print 'Enter "y" or "n":'
+        print "\nWould you like values corrected only for temperature? (Y/N)"
         inp = raw_input()
         if inp.upper() == "Y":
             params.append("Y")
@@ -123,8 +120,7 @@ def getPlotParameters():
             params.append("N")
 
     #Plot ratio to golden counter?
-    print "\nWould you like ratios to the golden counter plotted instead of currents?"
-    print 'Enter "y" or "n":'
+    print "\nWould you like ratios to the golden counter plotted instead of currents? (Y/N)"
     inp = raw_input()
     if inp.upper() == "Y":
         params.append("Y")
@@ -132,13 +128,25 @@ def getPlotParameters():
         params.append("N")
 
     #Normalize by channel?
-    print "\nWould you like data to be normalized by channel?"
-    print 'Enter "y" or "n":'
+    print "\nWould you like data to be normalized by channel? (Y/N)"
     inp = raw_input()
     if inp.upper() == "Y":
         params.append("Y")
     else:
         params.append("N")
+
+
+    #Print SNs of low-performing dicounters?
+    if params[7] == "Y": #If normalized
+        print "\nWould you like the SNs of low-performing dicounters to be printed? (Y/N)"
+        inp = raw_input()
+        if inp.upper() == "Y":
+            params.append("Y")
+        else:
+            params.append("N")
+    else:
+        params.append("N")
+        
 
     return params
 
@@ -235,6 +243,11 @@ def plotSourceData(params, sns, data, goldens):
     w_b2s = []
     w_b3s = []
     w_b4s = []
+    #Arrays to track serial numbers of selected dicounters so low performers may be identified
+    aSNs = []
+    bSNs = []
+    w_aSNs = []
+    w_bSNs = []
     #Temporary arrays for processing
     vals = []
     golds = []
@@ -253,6 +266,7 @@ def plotSourceData(params, sns, data, goldens):
                     vals.append(data[sn][0][i])
                     crysts.append(data[sn][2][i])
                 
+                aSNs.append(sn);
 
                 if params[3] == "Y": #Subtract out dark current
                     if data[sn][0][12] == -1:
@@ -306,6 +320,8 @@ def plotSourceData(params, sns, data, goldens):
                     vals.append(data[sn][0][6 + i])
                     crysts.append(data[sn][2][6 + i])
                 
+                w_aSNs.append(sn)
+
 
                 if params[3] == "Y": #Subtract out dark current
                     if data[sn][0][12] == -1:
@@ -358,12 +374,13 @@ def plotSourceData(params, sns, data, goldens):
                 for i in range(0,4): #Strong values
                     vals.append(data[sn][0][i])
                     crysts.append(data[sn][2][i])
+                aSNs.append(sn)
                 if data[sn][0][6] < 0:
                     print "WARNING: Missing weak A-side data for " + str(sn) + " - skipping"
                     continue
                 for i in range(0,4): #Weak values
                     vals.append(data[sn][0][6 + i])
-                
+                w_aSNs.append(sn)
                 if params[3] == "Y": #Subtract out dark current
                     if data[sn][0][12] == -1:
                         print "WARNING: No dark current for " + str(sn) + " - skipping"
@@ -438,6 +455,7 @@ def plotSourceData(params, sns, data, goldens):
                     vals.append(data[sn][1][i])
                     crysts.append(data[sn][2][i])
                 
+                bSNs.append(sn)
 
                 if params[3] == "Y": #Subtract out dark current
                     if data[sn][1][12] == -1:
@@ -491,6 +509,7 @@ def plotSourceData(params, sns, data, goldens):
                     vals.append(data[sn][1][6 + i])
                     crysts.append(data[sn][2][6 + i])
                 
+                w_bSNs.append(sn)
 
                 if params[3] == "Y": #Subtract out dark current
                     if data[sn][1][12] == -1:
@@ -543,12 +562,14 @@ def plotSourceData(params, sns, data, goldens):
                 for i in range(0,4): #Strong values
                     vals.append(data[sn][1][i])
                     crysts.append(data[sn][2][i])
-            
+                bSNs.append(sn)
+                
                 if data[sn][1][6] < 0:
                     print "WARNING: Missing weak B-side data for " + str(sn) + " - skipping"
                     continue
                 for i in range(0,4): #Weak values
                     vals.append(data[sn][1][6 + i])
+                w_bSNs.append(sn)
                 
                 
                 if params[3] == "Y": #Subtract out dark current
@@ -641,6 +662,16 @@ def plotSourceData(params, sns, data, goldens):
             vals = []
             cFctor = 0
 
+    thresh = 0
+    if params[8] == "Y": #If print SNs of low-performing dicounters
+        print "Enter a minimum threshold as a percentage of the mean value of each channel in decimal form"
+        print "Dicounter channels that perform below this threshold will be printed"
+        print 'e.g. input "0.75" ==> readouts below 75% of the mean value of the channel printed'
+        inp = raw_input()
+        thresh = float(inp)
+        
+    underPerformers = []
+
     #Normalize if desired
     if params[7] == "Y":
         a1s = normalize(a1s)
@@ -656,6 +687,16 @@ def plotSourceData(params, sns, data, goldens):
         d3s = normalize(d3s)
         d4s = normalize(d4s)
 
+        if params[8] == "Y": #Print underperformers
+            underPerformers.extend(buildUnderPerformerList(thresh, aSNs, a1s, "a1"))
+            underPerformers.extend(buildUnderPerformerList(thresh, aSNs, a2s, "a2"))
+            underPerformers.extend(buildUnderPerformerList(thresh, aSNs, a3s, "a3"))
+            underPerformers.extend(buildUnderPerformerList(thresh, aSNs, a4s, "a4"))
+            underPerformers.extend(buildUnderPerformerList(thresh, bSNs, b1s, "b1"))
+            underPerformers.extend(buildUnderPerformerList(thresh, bSNs, b2s, "b2"))
+            underPerformers.extend(buildUnderPerformerList(thresh, bSNs, b3s, "b3"))
+            underPerformers.extend(buildUnderPerformerList(thresh, bSNs, b4s, "b4"))
+
         if params[1] == "ALL": #If data from all source positions is needed, weak and strong normalized separately
             w_a1s = normalize(w_a1s)
             w_a2s = normalize(w_a2s)
@@ -666,6 +707,15 @@ def plotSourceData(params, sns, data, goldens):
             w_b3s = normalize(w_b3s)
             w_b4s = normalize(w_b4s)
 
+            if params[8] == "Y": #Print underperformers
+                underPerformers.extend(buildUnderPerformerList(thresh, w_aSNs, w_a1s, "a1_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_aSNs, w_a2s, "a2_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_aSNs, w_a3s, "a3_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_aSNs, w_a4s, "a4_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_bSNs, w_b1s, "b1_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_bSNs, w_b2s, "b2_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_bSNs, w_b3s, "b3_w"))
+                underPerformers.extend(buildUnderPerformerList(thresh, w_bSNs, w_b4s, "b4_w"))
 
     if params[1] == "ALL": #If all source positions, combine strong and weak data
         a1s.extend(w_a1s)
@@ -677,6 +727,13 @@ def plotSourceData(params, sns, data, goldens):
         b3s.extend(w_b3s)
         b4s.extend(w_b4s)
     
+
+    #Print underPerformers
+    if params[8] == "Y":
+        print "Dicounter channels which had readouts below " + str(thresh*100) + "% of the channel mean:"
+        underPerformers.sort()
+        for entry in underPerformers:
+            print entry
 
     #Initialize and plot histograms
     if params[0] == "A" or params[0] == "ALL":
@@ -805,13 +862,23 @@ def normalize(vals = []):
 
 #------------------------------------------------------------------------------------------------------------
 
-##Function to adjust histogram options (scales, titling, etc)
-def updateHistOptions(pad = 1):
-    global canvas
+##Function to build a list of underperforming dicounters
+#@param thresh - threshold percentage below which dicounters are considered "underperformers" e.g. 0.75
+#@param sns - list of serial numbers corresponding to the data (in order)
+#@param data - list of data values
+#@param channel - channel id corresponding to data values. e.g. "a1"
+def buildUnderPerformerList(thresh, sns, data, channel):
+    if len(data) != len(sns):
+        print "WARNING - data and SN lists have different lengths - underperformer list may be innacurate"
 
-    canvas.cd(pad)
+    underPerformers = []
+    for i in range(len(data)):
+        val = data[i]
+        if val < thresh:
+            entry = str(sns[i]) + "-" + channel + " = " + str(val*100)[:5] +"%"
+            underPerformers.append(entry)
     
-    
+    return underPerformers
 
 #------------------------------------------------------------------------------------------------------------
 
