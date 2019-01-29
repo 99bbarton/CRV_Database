@@ -14,6 +14,7 @@
 ##08/24/2018 - Added functions to retrieve sns by crate # and that are not in modules already
 ##01/04/2019 - Debugged different length flagging tool
 ##01/15/2019 - Corrected mode elif block to associate 3 with transmission data
+##01/29/2019 - Added option to edit/fit source histograms
 
 
 #------------------------------------------------------------------------------------------------------------
@@ -646,8 +647,11 @@ def sourceQA_local(inFilename = ""):
 
         SourceAnalysisTools.plotSourceData(plotParams, sns, data, goldens)
 
-        ##Re-title histogram(s) if desired
-        ###############################################################################################
+        ##Edit histogram(s) if desired
+        print "Would you like to edit any histograms? (y/n)"
+        inp = raw_input()
+        if inp.upper() == "Y":
+            SourceAnalysisTools.editHists()
         
         ##Close/destroy Root objects to avoid memory leaks
         if raw_input("\nHit any key to close canvas\n") != None:
@@ -988,9 +992,12 @@ def sourceQA_database(sns):
 
         SourceAnalysisTools.plotSourceData(plotParams, foundSNs, data, goldens)
 
-        ##Re-title histogram(s) if desired
-        ###############################################################################################
-        
+        ##Edit histogram(s) if desired
+        print "Would you like to edit any histograms? (y/n)"
+        inp = raw_input()
+        if inp.upper() == "Y":
+            SourceAnalysisTools.editHists()
+
         ##Close/destroy Root objects to avoid memory leaks
         if raw_input("\nHit any key to close canvas\n") != None:
             SourceAnalysisTools.cleanRootObjects()

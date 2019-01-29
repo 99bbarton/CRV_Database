@@ -6,6 +6,7 @@
 ##08/20/18 - Debugged initial version complete
 ##01/04/19 - Debugged issue where weak-side values were not added to data lists when all source positions were selected
 ##01/22/19 - Added code to associate SNs with data lists and print out underperforming channels
+##01/29/19 - Added code to write histograms to ROOT file and added editHists() function
 
 import ROOT
 
@@ -840,6 +841,12 @@ def plotSourceData(params, sns, data, goldens):
             plotOverlaid(hists)
             histograms.extend(hists)
     hists = []
+
+    #Write histograms to ROOT file
+    histFile = ROOT.TFile("histograms.root", "RECREATE")
+    for hist in histograms:
+        hist.Write()
+    histFile.Close()
         
 
 #------------------------------------------------------------------------------------------------------------
@@ -880,6 +887,19 @@ def buildUnderPerformerList(thresh, sns, data, channel):
     
     return underPerformers
 
+#------------------------------------------------------------------------------------------------------------
+
+##Function to edit appearance of and to fit histograms
+def editHists():
+    global histograms, canvas
+
+    for hist in histograms:
+        print "Would you like to edit histogram = "  + hist.GetName() + " ? (y/n)"
+        inp = raw_input()
+        if inp.upper() == "Y":
+            hist.DrawPanel()
+            hist.FitPanel()
+            
 #------------------------------------------------------------------------------------------------------------
 
 ##Function to delete/close all ROOT objects to prevent memory leaks
