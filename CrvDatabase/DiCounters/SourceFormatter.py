@@ -1,4 +1,4 @@
-##Script to format source testing data to the format needed for Merrill Jenkin's script to send data to the CRV Production Database.
+##Script to format source testing data for analysis scripts -NOT FOR DATABASE UPLOAD FORMATTING
 ##Written by Ben Barton
 ##bb6yx@virginia.edu, 99bbarton@gmail.com
 ##1-540-355-8918
@@ -12,7 +12,12 @@
 ##07/09/18 - Removed call to calcBiasVoltage(), replaced with default value of 57.0 V. Adapted to handle "golden" reference dicounter and dicounters not in database already
 ##07/13/18 - Added option to run without creating an upload file (just flag potentially problematic lines)
 ##07/17/18 - Added 4 channels to each line for current from crystals. Added log file to record sns which could not be found in the database
-
+##08/07/18 - Added comment feature and distinction between "rad" and "dark" for data without crystals and "crystal_rad" and "crystal_dark" for data with crystals
+##08/08/18 - Added second try-catch block to repeat queries if failed in order to avoid connection based issues et al
+##08/09/18 - Added code to remove newline character from the end of B-side channels when crystals were not present
+##08/22/18 - Added default comment of "No Comment"
+##09/24/18 - Added code to avoid duplicate timestamps by adding a "seconds" value to tests which have the same timestamp as the previous test
+##           NOTE: This addition was forced due to improper labeling in data files - this code will no longer return correct source pos values if tests are not performed 1m from each side
 
 ################################################################### Instructions ##################################################################################
 ##-This script can be run from and editor or terminal, the command line, or simply by double clicking on the file.                                               ##
@@ -25,14 +30,13 @@
 ##-Data should be in following format (<> indicates optional field/component):                                                                                   ##
 ##dicounterSN<-sourcePosition>  <temp> (old data does not have temp)  <M>M/<d>d/yyyy HH:mm    b1 b2 b3 b4 a1 a2 a3 a4                                            ##
 ##-Follow all instructions on the source testing SOP in order to ensure proper formatting of data.                                                               ##
-##-Before running, ensure that the global variable "database" is the correct database (production or development)                                                ##
 ##-Note: Accessing the database is relatively slow and the script may take several minutes to run for larger files                                               ##
 ###################################################################################################################################################################
 
 import sys
 ##sys.path.append("../DatabaseQueryTool.py")
 import DatabaseQueryTool ##To query database
-from time import strftime 
+from datetime import *
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -41,7 +45,7 @@ outFileName = ""
 flagged = {} ##A dictionary which stores all input data lines which do not match the required format
 db_dicounters = [] ##A list of all dicounters currently stored in the database - Extracted from the .csv dumpfile
 db_dicounterTests = [] ##A list of all dicounter tests currently stored in the database
-database = "mu2e_hardware_dev" ##The name of the database to be accessed to obtain dicounter lengths and run checks over ##################### Change when transitioning to production db ##
+database = "" ##The name of the database to be accessed to obtain dicounter lengths and run checks over 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -146,13 +150,13 @@ def flagLines():
                     flagged[lineNum] = "Invalid dicounter serial number" ##Flag if dicounter ID  is not in the form "<dicounterSN>" or "<dicounterSN>-"<something>"
 
             if len(idComponents)== 2:##Flag if source position is not labeled as being a distance X from either side "A" or "B"
-                if idComponents[1][-1] != "A" and idComponents[1][-1] != "B": 
+                if idComponents[1].upper().find("A") < 0 and idComponents[1].upper().find("B") < 0: 
                     flagged[lineNum] = "Invalid source position"
                 sourcePos = idComponents[1][:-1]
-                try:
-                    float(sourcePos)
-                except:
-                    flagged[lineNum] = "Invalid source position"
+               # try:
+                #    float(sourcePos)
+                #except:
+                 #   flagged[lineNum] = "Invalid source position 2"
 
         ##Check for duplicate keys - print warning to console
         if prevIDs.has_key(di_id):
@@ -180,7 +184,7 @@ def flagLines():
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
 ##Function to reformat data and write it to the output file. Also prints flagged lines to the console
-def processData():
+def processData(comment = ""):
     global lines, flagged, outFileName, database
     
     lnComponents = []
@@ -189,13 +193,14 @@ def processData():
     sourePos = ""
     temp = -1.0
     dateTime = ""
+    previousDT = ""
     data = []
     formattedLine = ""
     skippedSNs = [] ##Serial numbers of dicounters which could not be found in the database and are therefore skipped during processing
 
     outputFile = open(outFileName,"w")
     skippedLogFile = open("snsNotinDB.txt","a+")
-    skippedLogFile.write(strftime("\n" + "%d%b%Y_%H:%M") + ":\n")
+    skippedLogFile.write(datetime.now().strftime("\n" + "%d%b%Y_%H:%M") + ":\n")
     
     for lineNum in range(len(lines)):
         formattedLine = ""
@@ -218,36 +223,60 @@ def processData():
 
             formattedLine += "57.0," + str(temp) + ","
 
-            ##Add date-timestamp to output line. On old file versions date is second column. On newer files, date is third column and temp is second column.
+            ##Add date-timestamp to output line. On pre-production file versions date is second column. On newer files, date is third column and temp is second column.
             if temp == -1:          ##Old file version which did not store temp
                 formattedLine += lnComponents[1] + ","
-            else:                   ##Newer file version which does have temp
-                formattedLine += lnComponents[2] + ","
+            else:                   ##File version which does have temp
+                if lnComponents[2] == previousDT: #Appends a "seconds" value to a test which has the same timestamp as the previous test, avoiding duplicate timestamps
+                    formattedLine += lnComponents[2] + ":30,"
+                    previousDT = lnComponents[2]
+                else:   
+                    formattedLine += lnComponents[2] + ","
+                    previousDT = lnComponents [2]
 
+                
+            if len(lnComponents) >= 16: #If has crystal data
+                sourceType = "crystal_rad"
+                darkType = "crystal_dark"
+            else:
+                sourceType = "rad"
+                darkType = "dark"
+                    
             ##Add source position in cm from side A to output line and label "rad,1 mCi^137". For dark current, leave source position blank, label "dark", and leave source info blank
             if len(di_id.split("-")) == 2:
                 sourcePos = di_id.split("-")[1]
 
                 try:
-                    formattedLine += str(getSourcePositionFromDB(diSN,sourcePos,database)) + ",rad,1 mCi Cs^137,"
+                    formattedLine += str(getSourcePositionFromDB(diSN,sourcePos,database)) + "," + sourceType + ",1 mCi Cs^137,"
                     ##formattedLine += str(getSourcePositionFromDump(diSN,sourcePos)) + ",rad,1 mCi Cs^137," ##If using dump file
                 except:
-                    skippedSNs.append(diSN)
-                    print "WARNING: " + diSN + " could not be located in the database and was skipped"
-                    continue
+                    try: #Try query a second time if first query failed in case of connection issues etc
+                        formattedLine += str(getSourcePositionFromDB(diSN,sourcePos,database)) + "," + sourceType + ",1 mCi Cs^137,"
+                    except:
+                        skippedSNs.append(diSN)
+                        print "WARNING: " + diSN + " could not be located in the database and was skipped"
+                        continue
             else:
                 try:
                     fetchCondition = "di_counter_id:eq:di-" + diSN
-                    ##dbTest = DatabaseQueryTool.query(database,"di_counters","di_counter_id",fetchCondition)[0]
-                    formattedLine += ",dark,,"
+                    #dbTest = DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0]
+                    formattedLine += "," + darkType + ",,"
                 except:
-                    skippedSNs.append(diSN)
-                    print "WARNING: " + diSN + " could not be located in the database and was skipped"
-                    continue
+                    try: #Try query a second time if first query failed in case of connection issues et al
+                        fetchCondition = "di_counter_id:eq:di-" + diSN
+                        dbTest = DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0]
+                        formattedLine += "," + darkType + ",,"
+                    except:
+                        skippedSNs.append(diSN)
+                        print "WARNING: " + diSN + " could not be located in the database and was skipped"
+                        continue
                 
   
             
             ##Add data values to output line
+            
+            if lnComponents[11].find("\n"):
+                lnComponents[11] = lnComponents[11][:-1]
             data = lnComponents[8:12] + lnComponents[4:8] ##Switches B-side and A-side values to be in correct order of A then B
 
             for channel in data:
@@ -260,9 +289,9 @@ def processData():
                 formattedLine = formattedLine[:-3]
             else:
                 formattedLine += "-1,-1,-1,-1"
-            
-            ##Add newline character to the end of the line
-            formattedLine += "\n"
+
+            #Add comment field (or empty string if no comment was provided) and newline
+            formattedLine += "," + comment + "\n"
 
             ##Write output line to file
             outputFile.write(formattedLine)
@@ -291,27 +320,30 @@ def calcBiasV(temp):
 
 ##Funtion to extract dicounter length from the database and use it to return a source position in cm
 ##This function replaces getSourcePositionFromDump()
+##NOTE: THIS FUNCTION ONLY RETURNS THE CORRECT VALUE IF TESTS WERE PERFORMED 1 METER FROM EACH SIDE - THIS IS A RESULT OF PEOPLE NOT FOLLOWING THE PRESCIBED LABELLING CONVENTIONS...
 def getSourcePositionFromDB(diSN,sourcePos,database):
     sourcePos_in_cm = -1
-
-    fetchCondition = "di_counter_id:eq:di-" + diSN
     
-    diLength = 3.20
+    fetchCondition = "di_counter_id:eq:di-" + diSN
+    #diLength = float(DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0])
+    diLength = 10
 
     if diLength > 0:
-        if sourcePos[-1] == "A":
+        if sourcePos.upper().find("A") >= 0:
             try:
-                sourcePos_in_cm = int(float(sourcePos[:-1]) * 100)
+                #sourcePos_in_cm = int(float(sourcePos[:-1]) * 100) ##Depended on the convention that sourc positions be -xA or -xB where x is the distance from the respective side in m
+                sourcePos_in_cm = 100 #Only works if always testing 1m from each side
             except:
                 sourcePos_in_cm = -1
                 
-        elif sourcePos[-1] == "B":
+        elif sourcePos.upper().find("B") >= 0:
             try:
-                sourcePos_in_cm = int((diLength * 100) - (float(sourcePos[:-1]) * 100))
+               # sourcePos_in_cm = int((diLength * 100) - (float(sourcePos[:-1]) * 100))
+                sourcePos_in_cm = int((diLength * 100)) - 100 
             except:
                 sourcePos_in_cm = -1
 
-    return sourcePos_in_cm
+    return sourcePos_in_cm 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     
@@ -355,16 +387,37 @@ def getSourcePositionFromDump(diSN,sourcePos):
 
 ##Program driver function
 def main(argv):
-    global flagged, lines
+    global flagged, lines, database
+
+    print "Which database would you like to be used?"
+    print 'Enter "d" for development or "p" for production'
+    dbChoice = raw_input()
+    if dbChoice.upper() == "D":
+        database = "mu2e_hardware_dev"
+    else:
+        database = "mu2e_hardware_prd"
     
     getInput()
-    ##getDatabaseDumpInfo() ##Obsolete function. Replaced by individual database acess using DatabaseQueryTool
+    ##getDatabaseDumpInfo() ##Obsolete function. Replaced by individual database acess using DatabaseQueryTool    
     flagLines()
+    
     print "Would you like to produce a database upload format file?"
     print 'Enter "y" or "n":'
     response = raw_input()
     if response.upper() == "Y":
-        processData()
+        
+        ##Add comments if desired
+        print "Would you like to add a comment? Note, comment will be applied to all tests in the current file"
+        print 'Enter "y" or "n":'
+        inp = raw_input()
+        if inp.upper() == "Y":
+            print "Enter comment:"
+            comment = raw_input()
+        else:
+            comment = "No Comment"
+
+        print "Running - This may take a few minutes"
+        processData(comment)
     else:
         ##Print out the line number, error, and line for each flagged line
         for lineNum in range(len(lines)):
