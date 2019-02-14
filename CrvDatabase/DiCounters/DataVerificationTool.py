@@ -15,6 +15,7 @@
 ##01/04/2019 - Debugged different length flagging tool
 ##01/15/2019 - Corrected mode elif block to associate 3 with transmission data
 ##01/29/2019 - Added option to edit/fit source histograms
+##02/14/2019 - Added code to print which SNs of a specified list were not found in a source data input file
 
 
 #------------------------------------------------------------------------------------------------------------
@@ -407,7 +408,7 @@ def sourceQA_local(inFilename = ""):
         parsed = inp.split(",")
 
         for elem in parsed:
-            if elem.find("-") > 0:
+            if elem.find("-") >= 0:
                 minMax = elem.split("-")
                 minMax[1] = int(minMax[1]) + 1
             
@@ -417,7 +418,6 @@ def sourceQA_local(inFilename = ""):
                 plotThese.append(str(elem))
         if len(plotThese) == 0:
             print "WARNING: No serial numbers specified"
-        
 
     ##Create a list (set) of serial numbers in the file - also create a list of golden counter test dates
     for lnNum in range(len(lines)):
@@ -439,6 +439,11 @@ def sourceQA_local(inFilename = ""):
             sns.append(sn)
     
     sns = set(sns)
+    missingSNs = [sn for sn in plotThese if sn not in sns]
+    if len(missingSNs) > 0:
+        print "\nWARNING: SNs not in file: " + str(missingSNs)
+    
+
 
 
     ##Create a hash table which maps serial numbers to 3x18 arrays of data values
