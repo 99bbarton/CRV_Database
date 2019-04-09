@@ -277,6 +277,9 @@ class diCounter(object):
 ####  Next send the diCounter data to the database... one diCounter at a time!
 ####  This done after the statistics for a batch have been loaded....
   def sendDiCounterToDatabase(self):
+    
+    self.__update = 1 ################################## Set to update mode by default (will update or initial upload)
+    
     self.__group = "Composite Tables"
     self.__diCounterTable = "Di_Counters"
     if(self.__cmjDebug != 0):  print "XXXX __diCounter__::sendDiCounterToDatabase... self.__url = %s " % self.__url
