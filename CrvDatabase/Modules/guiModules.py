@@ -57,7 +57,8 @@
 ##  Modified by cmj2017May31... Add "di-" identifiery for di-counters.
 ##  Modified by cmj2017Aug2... Change to drive Modules.py
 ##
-##
+##  #################################
+##  Modified by Ben Barton - Updated path for DataLoader to include hdbClient_v2_0
 ##
 sendDataBase = 0  ## zero... don't send to database
 #
@@ -73,7 +74,7 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/Dataloader.zip")
+sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")
 sys.path.append("../CrvUtilities/crvUtilities.zip")
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
