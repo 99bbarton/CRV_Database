@@ -18,6 +18,7 @@
 ##08/22/18 - Added default comment of "No Comment"
 ##09/24/18 - Added code to avoid duplicate timestamps by adding a "seconds" value to tests which have the same timestamp as the previous test
 ##           NOTE: This addition was forced due to improper labeling in data files - this code will no longer return correct source pos values if tests are not performed 1m from each side
+##04/16/19 - Updated timestamper to use 4-digit year format
 
 ################################################################### Instructions ##################################################################################
 ##-This script can be run from and editor or terminal, the command line, or simply by double clicking on the file.                                               ##
@@ -228,11 +229,15 @@ def processData(comment = ""):
                 formattedLine += lnComponents[1] + ","
             else:                   ##File version which does have temp
                 if lnComponents[2] == previousDT: #Appends a "seconds" value to a test which has the same timestamp as the previous test, avoiding duplicate timestamps
-                    formattedLine += lnComponents[2] + ":30,"
+                    timestamp = lnComponents[2].split(" ") #Make into 4 digit year format
+                    formattedLine += timestamp[0][:-2] + "20" + timestamp[0][-2:] + " " + timestamp[1] + ":30,"
+                    #formattedLine += lnComponents[2] + ":30,"
                     previousDT = lnComponents[2]
                 else:   
-                    formattedLine += lnComponents[2] + ","
-                    previousDT = lnComponents [2]
+                    timestamp = lnComponents[2].split(" ") #Make into 4 digit year format
+                    formattedLine += timestamp[0][:-2] + "20" + timestamp[0][-2:] + " " + timestamp[1] + ","
+                    ##formattedLine += lnComponents[2] + ","
+                    previousDT = lnComponents[2]
 
                 
             if len(lnComponents) >= 16: #If has crystal data
