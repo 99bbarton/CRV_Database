@@ -16,6 +16,7 @@
 ##08/08/18 - Added second try-catch block to repeat queries if failed in order to avoid connection based issues et al
 ##08/09/18 - Added code to remove newline character from the end of B-side channels when crystals were not present
 ##08/22/18 - Added default comment of "No Comment"
+##04/16/19 - Updated timestamp to use 4-digit year format
 
 ################################################################### Instructions ##################################################################################
 ##-This script can be run from and editor or terminal, the command line, or simply by double clicking on the file.                                               ##
@@ -224,7 +225,9 @@ def processData(comment = ""):
             if temp == -1:          ##Old file version which did not store temp
                 formattedLine += lnComponents[1] + ","
             else:                   ##File version which does have temp
-                formattedLine += lnComponents[2] + ","
+                timestamp = lnComponents[2].split(" ") #Make into 4 digit year format
+                formattedLine += timestamp[0][:-2] + "20" + timestamp[0][-2:] + " " + timestamp[1] + ","
+                #formattedLine += lnComponents[2] + ","
 
                 
             if len(lnComponents) >= 16: #If has crystal data
