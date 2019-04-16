@@ -351,7 +351,7 @@ def sourceQA_local(inFilename = ""):
     plotThese = [] #List of serial numbers of dicounters that user wants to plotted from the file
     prevLen = 0
 
-    prodUpFilename = "sourceQA_VerifiedForUpload_" + strftime("%d%b%Y_%H:%M") + ".csv"
+    prodUpFilename = "sourceQA_VerifiedForUpload_" + strftime("%d%b%Y_%H%M") + ".csv"
     prodUploadFile = open(prodUpFilename,"w")
 
     ##If a filename is passed, try to open and read from it
@@ -426,7 +426,10 @@ def sourceQA_local(inFilename = ""):
             continue
 
         lnComponents = lines[lnNum].split(",")
-        sn = lnComponents[0].split("-")[1]
+        try: #########################
+            sn = lnComponents[0].split("-")[1]
+        except:
+            continue
         
         #Skip over any lines coresponding to dicounters not in specified list of sns to plot (if applicable)
         if len(plotThese) > 0:
@@ -492,7 +495,10 @@ def sourceQA_local(inFilename = ""):
 
         lnComponents = lines[lnNum].split(",")
 
-        sn = lnComponents[0].split("-")[1]
+        try: #########################
+            sn = lnComponents[0].split("-")[1]
+        except:
+            continue
 
         #Skip any dicounter that is not in list of sns to plot (if applicable)
         if len(plotThese) > 0:
