@@ -23,6 +23,7 @@
 ##      2016May9... Add getVersion method....
 ##
 ##	2018Feb16... Add urls for updated databases.
+##	2018Sep19... Change URL's for the development database write dbweb5.fnal.gov -> dbweb6.fnal.gov
 ##
 class databaseConfig(object):
   def __init__(self):
@@ -33,9 +34,13 @@ class databaseConfig(object):
     #self.__productionQueryUrl ="http://ifb-data.fnal.gov:8131/QE/mu2e_hw/app/SQ/query"
     #self.__productionWriteUrl = "http://ifb-data.fnal.gov:8133/mu2e/hdb/loader"
 
-    self.__queryUrl = "http://ifb-data.fnal.gov:9090/QE/hw/app/SQ/query"  ## url updated 2018Feb27
-    self.__writeUrl = "https://dbweb5.fnal.gov:8443/hdb/mu2edev/loader"  ## url updataed 2018Feb16
-    self.__productionQueryUrl ="http://ifb-data.fnal.gov:9090/QE/hw/app/SQ/query" ## url updated 2018Feb27
+    #self.__queryUrl = "http://ifb-data.fnal.gov:9090/QE/hw/app/SQ/query"  ## url updated 2018Feb27 - Removed 2018Oct1
+    #self.__queryUrl = "http://dbdata0vm.fnal.gov:9090/QE/mu2e/prod/app/SQ/query?"  ## url updated 2018Oct1... non-cached... suggested by Igor via ticket
+    self.__queryUrl = "http://dbdata0vm.fnal.gov:9090/QE/hw/app/SQ/query"  ## url updated 2018Oct4.. suggested by Steve's answer to ticket INC000000986683
+    self.__writeUrl = "https://dbweb6.fnal.gov:8443/hdb/mu2edev/loader"  ## url updated 2018Sep19
+    #self.__productionQueryUrl ="http://ifb-data.fnal.gov:9090/QE/hw/app/SQ/query" ## url updated 2018Feb27  - Removed 2018Oct1
+    #self.__productionQueryUrl ="http://dbdata0vm.fnal.gov:9090/QE/mu2e/prod/app/SQ/query?" ## url updated 2018Oct1... non-cached... suggested by Igor via ticket
+    self.__productionQueryUrl ="http://dbdata0vm.fnal.gov:9090/QE/hw/app/SQ/query" ## url updated 2018Oct4.. suggested by Steve's answer to ticket INC000000986683
     self.__productionWriteUrl = "https://dbweb6.fnal.gov:8443/hdb/mu2e/loader"  ## url updated 2018Apr27 
                                                                                  ## Vladimir's Email 
     #print '==============>>>> databaseConfig -----%s----- \n' % self.__queryUrl
