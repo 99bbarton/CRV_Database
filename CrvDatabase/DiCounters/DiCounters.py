@@ -56,6 +56,9 @@
 ##  Modified by cmj2018Jun8.... Change to hdbClient_v2_0
 ##  Modified by cmj2018Jul25... Add update mode to data loader call
 ##  Modified by cmj2018Jul25... Remove the number of columns for the reads
+##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
+##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
+##				yellow highlight to selected scrolled list items
 ##
 ##
 ##
@@ -71,13 +74,13 @@ from time import *
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
 sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Jun8
-sys.path.append("../CrvUtilities/crvUtilities.zip")
+sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
 
 ProgramName = "DiCounters"
-Version = "version2018.07.25"
+Version = "version2018.10.04"
 
 
 ##############################################################################################
@@ -277,9 +280,6 @@ class diCounter(object):
 ####  Next send the diCounter data to the database... one diCounter at a time!
 ####  This done after the statistics for a batch have been loaded....
   def sendDiCounterToDatabase(self):
-    
-    self.__update = 1 ################################## Set to update mode by default (will update or initial upload)
-    
     self.__group = "Composite Tables"
     self.__diCounterTable = "Di_Counters"
     if(self.__cmjDebug != 0):  print "XXXX __diCounter__::sendDiCounterToDatabase... self.__url = %s " % self.__url
