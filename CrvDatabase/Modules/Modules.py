@@ -43,8 +43,9 @@
 ##  Modified by cmj2016Jun24... Add one more upward level for subdirectory to get to the utilities directory
 ##  Modified by cmj2017Jan13... Add instructions for use in the call of the script.
 ##  Modified by cmj2017Feb2... Add test mode option; option to turn off send to database.
-##
-##
+##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
+##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
+##				yellow highlight to selected scrolled list items
 ##
 sendDataBase = 0  ## zero... don't send to database
 #
@@ -54,14 +55,15 @@ import optparse   ## parser module... to parse the command line arguments
 import math
 from collections import defaultdict
 from time import *
-sys.path.append("../../Utilities/Dataloader.zip")
-sys.path.append("../CrvUtilities/crvUtilities.zip")
+sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
+from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled list
 from generalUtilities import generalUtilities
 
 ProgramName = "Modules.py"
-Version = "version2017.08.02"
+Version = "version2018.10.04"
 
 
 ##############################################################################################

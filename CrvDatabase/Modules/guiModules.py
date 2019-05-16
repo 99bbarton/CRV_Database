@@ -56,9 +56,11 @@
 ##  Modified by cmj2017Mar14... Add test mode option; option to turn off send to database.
 ##  Modified by cmj2017May31... Add "di-" identifiery for di-counters.
 ##  Modified by cmj2017Aug2... Change to drive Modules.py
+##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
+##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
+##				yellow highlight to selected scrolled list items
 ##
-##  #################################
-##  Modified by Ben Barton - Updated path for DataLoader to include hdbClient_v2_0
+##
 ##
 sendDataBase = 0  ## zero... don't send to database
 #
@@ -74,16 +76,16 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")
-sys.path.append("../CrvUtilities/crvUtilities.zip")
+sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid2017Jun23 import *
+from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled list
 from Modules import *
 
 ProgramName = "guiModules.py"
-Version = "version2017.08.02"
+Version = "version2018.10.04"
 
 ##
 ## -------------------------------------------------------------
