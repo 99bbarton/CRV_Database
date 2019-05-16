@@ -8,6 +8,7 @@
 ##09/13/17 - Completed independent run-mode functionality
 ##01/09/18 - Added paths to DataLoader.py and databasConfig.py so script works in proper file structure.
 ##09/28/18 - Added path to utilities/ fo find DataLoader , reformatted printing of results to console
+##05/16/19 - Updated path to use crvUtilities2018.zip and new databaseConfig
 
 ##################################################################   Instructions   #################################################################################
 ##-This script can accept parameters from the command line, through prompting the user, or its query functionality can be called from another module.              ##
@@ -20,7 +21,7 @@
 import sys
 #sys.path.append("../../Utilities/DataLoader.zip")
 sys.path.append("../../Utilities/")
-sys.path.append("../CrvUtilities/crvUtilities.zip")
+sys.path.append("../CrvUtilities/crvUtilities2018.zip")
 from databaseConfig import * 
 from DataLoader import *
 
