@@ -46,6 +46,11 @@
 ##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
+##  Modified by cmj2019May16... Change "hdbClient_v2_0" to "hdbClient_v2_2"
+##  Modified by cmj2019May23... Add update mode for modules...
+##  Modified by cmj2019May23... Add a loop to give maxTries to send information to database.
+##
+##
 ##
 sendDataBase = 0  ## zero... don't send to database
 #
@@ -55,7 +60,7 @@ import optparse   ## parser module... to parse the command line arguments
 import math
 from collections import defaultdict
 from time import *
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
 sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
@@ -63,7 +68,7 @@ from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled 
 from generalUtilities import generalUtilities
 
 ProgramName = "Modules.py"
-Version = "version2018.10.04"
+Version = "version2019.05.22"
 
 
 ##############################################################################################
@@ -77,6 +82,8 @@ class crvModules(object):
     self.__maxColumns3 = 13	## maximum columns in the spread sheet for dicouner layer,position
     self.__maxColumns4 = 2 ## for the one module per spreadsheet scheme...
     self.__sendToDatabase = 0  ## Do not send to database
+    self.__maxTries = 3		## set up maximum number of tries to send information to the database.
+    self.__update = 0		## update = 0, add new entry, update = 1, update existing entry.
     self.__database_config = databaseConfig()
     self.__url = ''
     self.__password = ''
@@ -102,6 +109,7 @@ class crvModules(object):
 							## position 0, 1, 2, 3, 4, 5, 6, 7
 ## Di-Counters Initial information
     self.__startTime = strftime('%Y_%m_%d_%H_%M')
+    self.__sleepTime = 1.0
 ## -----------------------------------------------------------------
   def __del__(self):
     self.__stopTime = strftime('%Y_%m_%d_%H_%M')
@@ -140,6 +148,15 @@ class crvModules(object):
     print("...crvModules::sendToProductionDatabase... send to production database \n")
     self.__url = self.__database_config.getProductionWriteUrl()
     self.__password = self.__database_config.getCompositeProductionKey()
+## ---------------------------------------------------------------
+##  Change dataloader to update rather than insert.
+  def updateMode(self):
+    print("...crvModules::updateMode ==> change from insert to update mode")
+    self.__update = 1
+## -----------------------------------------------------------------
+## -----------------------------------------------------------------
+## -----------------------------------------------------------------
+## -----------------------------------------------------------------
 ###############################################1###############################################
 ##############################################################################################
 ##############################################################################################
@@ -224,8 +241,9 @@ class crvModules(object):
 ##
   def sendToDatabase(self,tempInputMode):
     if(tempInputMode.strip() == 'initial'):
-      self.sendModuleToDatabase()
       self.connectDiCounterLayerPosition()
+      self.sendModuleToDatabase()
+      #self.connectDiCounterLayerPosition()
     elif(tempInputMode.strip() == 'measure'):
       self.sendModuleTestsToDatabase()
     else:
@@ -262,23 +280,29 @@ class crvModules(object):
     if self.__sendToDatabase != 0:
       print "send crvModule to database!"
       self.__myDataLoader1 = DataLoader(self.__password,self.__url,self.__group,self.__crvModulesTable)
-      self.__myDataLoader1.addRow(self.__crvModulesString)
-      (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
-      print "self.__text = %s" % self.__text
-      time.sleep(2)     ## sleep so we don't send two records with the same timestamp....
-      if self.__retVal:				## sucess!  data sent to database
-	print "XXXX __crvModules__::sendModuleToDatabase: Counter Transmission Success!!!"
-	self.__logFile.write('XXXX__diCounter__::sendModuleToDatabase: send '+self.__moduleId+' to database.')
-	print self.__text
-      elif self.__password == '':
-	print('XXXX __crvModules__::sendModuleToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+      if(self.__update == 0):					##cmj2019May23... add update
+	self.__myDataLoader1.addRow(self.__crvModulesString)	##cmj2019May23... add new line
       else:
-	print "XXXX __crvModules__::sendModuleToDatabase:  Counter Transmission: Failed!!!"
-	print self.__code
-	print self.__text 
-	self.__logFile.write("XXXX__diCounter__::sendModuleToDatabase:  Counter Transmission: Failed!!!")
-	self.__logFile.write('XXXX__diCounter__::sendModuleToDatabase... self.__code = '+self.__code+'\n')
-	self.__logFile.write('XXXX__diCounter__::sendModuleToDatabase... self.__text = '+self.__text+'\n')
+	self.__myDataLoader1.addRow(self.__crvModulesString,'update')	##cmj2019May23... update existing line
+      for n in range(0,self.__maxTries):				## cmj2019May23... try to send maxTries time to database
+	(self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
+	print "self.__text = %s" % self.__text
+	sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
+	if self.__retVal:				## sucess!  data sent to database
+	  print "XXXX __crvModules__::sendModuleToDatabase: "+self.__moduleId+" Transmission Success!!!"
+	  self.__logFile.write('XXXX__diCounter__::sendModuleToDatabase: send '+self.__moduleId+' to database.')
+	  print self.__text
+	  break
+	elif self.__password == '':
+	  print('XXXX __crvModules__::sendModuleToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+	  break
+	else:
+	  print "XXXX __crvModules__::sendModuleToDatabase:  Counter Transmission: Failed!!!"
+	  print self.__code
+	  print self.__text 
+	  self.__logFile.write("XXXX__diCounter__::sendModuleToDatabase:  Transmission: Failed!!!")
+	  self.__logFile.write('XXXX__diCounter__::sendModuleToDatabase... self.__code = '+self.__code+'\n')
+	  self.__logFile.write('XXXX__diCounter__::sendModuleToDatabase... self.__text = '+self.__text+'\n')
     return 0
 ## -----------------------------------------------------------------
 ## -----------------------------------------------------------------
@@ -287,7 +311,6 @@ class crvModules(object):
       self.__sendModuleRow = {}
       self.__sendModuleRow['module_id'] = self.__moduleId
       self.__sendModuleRow['module_type'] = self.__moduleType
-      #self.__sendModuleRow['module_date'] = self.__moduleConstructionDate[tempKey]
       self.__sendModuleRow['location'] = self.__moduleLocation
       self.__sendModuleRow['width_mm'] = self.__moduleWidth
       self.__sendModuleRow['height_mm'] = self.__moduleLength
@@ -333,22 +356,28 @@ class crvModules(object):
       if self.__sendToDatabase != 0:
 	if(self.__cmjDebug != 0): print "send to crvModules database!"
 	self.__myDataLoader1 = DataLoader(self.__password,self.__url,self.__group,self.__crvModulesTestsTable)
-	self.__myDataLoader1.addRow(self.__crvModulesTestsString,'insert')
-	(self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
-	print "self.__text = %s" % self.__text
-	time.sleep(2)     ## sleep so we don't send two records with the same timestamp....
-	if self.__retVal:				## sucess!  data sent to database
-	  if(self.__cmjDebug !=0): print "XXXX __crvModules__::sendModuleTestsToDatabase: Counter Transmission Success!!!"
-	  print self.__text
-	elif self.__password == '':
-	  print('XXXX __crvModules__::sendModuleTestsToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+	if(self.__update ==0):							## cmj2019May23... add update
+	  self.__myDataLoader1.addRow(self.__crvModulesTestsString,'insert')	## cmj2019May23... add new entry
 	else:
-	  print "XXXX __crvModules__::sendModuleTestsToDatabase:  Counter Transmission: Failed!!!"
-	  print self.__code
-	  print self.__text 
-	  self.__logFile.write("XXXX__crvModules__::sendModuleTestsToDatabase:  Counter Transmission: Failed!!!")
-	  self.__logFile.write('XXXX__crvModules__:sendModuleTestsToDatabase... self.__code = '+self.__code+'\n')
-	  self.__logFile.write('XXXX__crvModules__:sendModuleTestsToDatabase... self.__text = '+self.__text+'\n')
+	  self.__myDataLoader1.addRow(self.__crvModulesTestsString,'update')	## cmj2019May23... update existing row.
+	for n in range(0,self.__maxTries):					## cmj2019May23... try to send to database maxTries times
+	  (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  	## send it to the data base!
+	  print "self.__text = %s" % self.__text
+	  sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
+	  if self.__retVal:				## sucess!  data sent to database
+	    if(self.__cmjDebug !=0): print "XXXX __crvModules__::sendModuleTestsToDatabase:"+self.__moduleId[self.__localModuleTestsId]+" Transmission Success!!!"
+	    print self.__text
+	    break
+	  elif self.__password == '':
+	    print('XXXX __crvModules__::sendModuleTestsToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+	    break
+	  else:
+	    print "XXXX __crvModules__::sendModuleTestsToDatabase:  Counter Transmission: Failed!!!"
+	    print self.__code
+	    print self.__text 
+	    self.__logFile.write("XXXX__crvModules__::sendModuleTestsToDatabase:  Transmission: Failed!!!")
+	    self.__logFile.write('XXXX__crvModules__:sendModuleTestsToDatabase... self.__code = '+self.__code+'\n')
+	    self.__logFile.write('XXXX__crvModules__:sendModuleTestsToDatabase... self.__text = '+self.__text+'\n')
     return 0
 ## -----------------------------------------------------------------
 ## -----------------------------------------------------------------
@@ -389,14 +418,13 @@ class crvModules(object):
     ## loop over the di-counters.... layer, then position.....
     self.__localLayerIndex = 0
     for self.__localModuleLayer in sorted(self.__moduleDiCounterPosition.keys()):
-      if(self.__cmjDebug > 2): print("XXXX __crvModules__::writeDiCounterLayerPosition: localModuleLayer = %s \n") %(self.__localModuleLayer) 
+      if(self.__cmjDebug > 1): print("XXXX __crvModules__::writeDiCounterLayerPosition: localModuleLayer = %s \n") %(self.__localModuleLayer) 
       self.__localDiCounterIndex = 0
       for self.__localDiCounterPosition in sorted(self.__moduleDiCounterPosition[self.__localModuleLayer].keys()):
 	self.__localDiCounterId = self.__moduleDiCounterPosition[self.__localModuleLayer][self.__localDiCounterPosition]
-	if(self.__cmjDebug > 2): print("XXXX __crvModules__::writeDiCounterLayerPosition: localDiCounterPosition = %s \n") %(self.__localDiCounterIndex) 
-	#  change back after requested change.... self.__diCounterString = self.buildDicounterLayerPositionString(self.__localDiCounterId,self.__localModuleLayer,self.__localDiCounterIndex)
-	self.__diCounterString = self.buildDicounterLayerPositionString(self.__localDiCounterId,self.__localLayerIndex,self.__localDiCounterIndex)
-	self.__localDiCounterIndex += 1
+	if(self.__cmjDebug > 1): print("XXXX __crvModules__::writeDiCounterLayerPosition: localDiCounterPosition = %s \n") %(self.__localDiCounterIndex) 
+	self.__diCounterString = self.buildDicounterLayerPositionString(self.__localDiCounterId,self.__localModuleLayer,self.__localDiCounterIndex)
+	##self.__diCounterString = self.buildDicounterLayerPositionString(self.__localDiCounterId,self.__localLayerIndex,self.__localDiCounterIndex)
 	self.logDiCounterString()
 	if self.__cmjDebug > 1: 
 	  print ("XXXX __crvModules__::writeDiCounterLayerPosition: self.__localFiberId = %s") % (self.__localDiCounterId)
@@ -405,42 +433,47 @@ class crvModules(object):
 	  print "send to diCounter layer,position to  database!"
 	  self.__myDataLoader1 = DataLoader(self.__password,self.__url,self.__group,self.__diCounterTable)
 	  self.__myDataLoader1.addRow(self.__diCounterString,'update')  ## update the existing di-counter record
-	  (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
-	  print "self.__text = %s" % self.__text
-	  time.sleep(2)     ## sleep so we don't send two records with the same timestamp....
-	  if self.__retVal:				## sucess!  data sent to database
-	    print "XXXX __crvModules__::writeDiCounterLayerPosition: Counter Transmission Success!!!"
-	    #### change back after requested change.... self.__logFile.write('XXXX __crvModules__::writeDiCounterLayerPosition: connect '+self.__localDiCounterId+' '+self.__localModuleLayer+' '+str(self.__localDiCounterIndex)+' in database')
-	    self.__logFile.write('XXXX __crvModules__::writeDiCounterLayerPosition: connect '+self.__localDiCounterId+' '+str(self.__localLayerIndex)+' '+str(self.__localDiCounterIndex)+' in database')
-	    print self.__text
-	  elif self.__password == '':
-	    print('XXXX__crvModules__::writeDiCounterLayerPosition: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
-	  else:
-	    print "XXXX__crvModules__::writeDiCounterLayerPosition:  Counter Transmission: Failed!!!"
-	    if(self.__cmjDebug > 1): 
-	      print("XXXX__crvModules__:writeDiCounterLayerPosition... Counter Transmission Failed: \n")
-	      print("XXXX__crvModules__:writeDiCounterLayerPosition... String sent to dataLoader: \n")
-	      print("XXXX__crvModules__:writeDiCounterLayerPosition... self.__diCounterString \%s \n") % (self.__diCounterString)
-	    print ("XXXX__crvModules__:writeDiCounterLayerPosition... self.__code = %s \n") % (self.__code)
-	    print ("XXXX__crvModules__:writeDiCounterLayerPosition... self.__text = %s \n") % (self.__text) 
-	    self.__logFile.write("XXXX__crvModules__::writeDiCounterLayerPosition:  Counter Transmission: Failed!!!")
-	    self.__logFile.write('XXXX__crvModules__::writeDiCounterLayerPosition... self.__code = '+self.__code+'\n')
-	    self.__logFile.write('XXXX__crvModules__::writeDiCounterLayerPosition... self.__text = '+self.__text+'\n')
+	  for n in range(0,self.__maxTries):
+	    (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
+	    print "self.__text = %s" % self.__text
+	    sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
+	    if self.__retVal:				## sucess!  data sent to database
+	      print "XXXX __crvModules__::writeDiCounterLayerPosition: diCounter:"+self.__localDiCounterId+' Layer: '+str(self.__localLayerIndex)+' Position: '+str(self.__localDiCounterIndex)+" Counter Transmission Success!!!"
+	      #### change back after requested change.... self.__logFile.write('XXXX __crvModules__::writeDiCounterLayerPosition: connect '+self.__localDiCounterId+' '+self.__localModuleLayer+' '+str(self.__localDiCounterIndex)+' in database')
+	      self.__logFile.write('XXXX __crvModules__::writeDiCounterLayerPosition: connect '+self.__localDiCounterId+' '+str(self.__localLayerIndex)+' '+str(self.__localDiCounterIndex)+' in database')
+	      print self.__text
+	    elif self.__password == '':
+	      print('XXXX__crvModules__::writeDiCounterLayerPosition: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+	    else:
+	      print "XXXX__crvModules__::writeDiCounterLayerPosition:  Counter Transmission: Failed!!!"
+	      if(self.__cmjDebug > 1): 
+		print("XXXX__crvModules__:writeDiCounterLayerPosition... Counter Transmission Failed: \n")
+		print("XXXX__crvModules__:writeDiCounterLayerPosition... String sent to dataLoader: \n")
+		print("XXXX__crvModules__:writeDiCounterLayerPosition... self.__diCounterString \%s \n") % (self.__diCounterString)
+	      print ("XXXX__crvModules__:writeDiCounterLayerPosition... self.__code = %s \n") % (self.__code)
+	      print ("XXXX__crvModules__:writeDiCounterLayerPosition... self.__text = %s \n") % (self.__text) 
+	      self.__logFile.write("XXXX__crvModules__::writeDiCounterLayerPosition:  Counter Transmission: Failed!!!")
+	      self.__logFile.write('XXXX__crvModules__::writeDiCounterLayerPosition... self.__code = '+self.__code+'\n')
+	      self.__logFile.write('XXXX__crvModules__::writeDiCounterLayerPosition... self.__text = '+self.__text+'\n')
+	self.__localDiCounterIndex += 1
       self.__localLayerIndex += 1
-#    return 0
 ## -----------------------------------------------------------------
 ## build the string to connect the dicounters in the layers and positions....
   def buildDicounterLayerPositionString(self,tempDiCounterId,tempModuleLayer,tempDiCounterPosition):
     self.__diCounterUpdate = {}
     self.__diCounterUpdate['di_counter_id'] = 'di-'+tempDiCounterId
     self.__diCounterUpdate['module_id'] = self.__moduleId
-    self.__diCounterUpdate['module_layer'] = tempModuleLayer
-    self.__diCounterUpdate['layer_position'] = tempDiCounterPosition
+    self.__diCounterUpdate['module_layer'] = str(tempModuleLayer)
+    self.__diCounterUpdate['layer_position'] = str(tempDiCounterPosition)
     return self.__diCounterUpdate
 ## -----------------------------------------------------------------
 ## Diagnostic function to print out the dictionary for the dicounter connection string sent to database
   def dumpDiCounterConnectionString(self):
     print("XXXX__crvModules__::buildDicounterLayerPositionString... self.__diCounterString = %s \n") %(self.__diCounterString)
+    print("XXXX__crvModules__::buildDicounterLayerPositionString... self.__diCounterUpdate['di_counter_id'] = %s") %(self.__diCounterUpdate['di_counter_id'])
+    print("XXXX__crvModules__::buildDicounterLayerPositionString... self.__diCounterUpdate['module_id'] = %s") %(self.__diCounterUpdate['module_id'])
+    print("XXXX__crvModules__::buildDicounterLayerPositionString... self.__diCounterUpdate['module_layer'] = %s") %(self.__diCounterUpdate['module_layer'])
+    print("XXXX__crvModules__::buildDicounterLayerPositionString... self.__diCounterUpdate['layer_position'] = %s \n") %(self.__diCounterUpdate['layer_position'])
 ## -----------------------------------------------------------------
 #### Diagnostic function to print out the dictionary for the fiber batch table:
   def logDiCounterString(self):
@@ -609,7 +642,7 @@ class crvModules(object):
     self.__tempMin  = self.__tempTime[1]
     if(int(self.__tempHour) < 10): self.__tempHour = '0'+ self.__tempHour
     if(int(self.__tempMin) < 10): self.__tempMin = '0' + self.__tempMin
-    self.__tempTimeStamp = '20'+self.__tempYear+'-'+self.__tempMonth+'-'+self.__tempDay+' '+self.__tempHour+':'+self.__tempMin
+    self.__tempTimeStamp = '20'+self.__tempYear+'-'+self.__tempMonth+'-self.__localDiCounterIndex'+self.__tempDay+' '+self.__tempHour+':'+self.__tempMin
     if(self.__cmjDebug > 11):
       print("XXXX__crvModules__:timeStamper...... self.__tempDate     = <%s>") % (self.__tempDate)
       print("XXXX__crvModules__:timeStamper...... self.__tempMmDdYy   = <%s>") % (self.__tempMmDdYy)
@@ -645,7 +678,7 @@ if __name__ == '__main__':
   modeString1.append("Input Mode: This script is run in several modes: \t\t\t")
   modeString1.append("initial: The default mode enters the initial module information. \t\t\t\t\t")
   modeString1.append("measure: This mode enters module test results into the database... Multiple test may be entered. ")
-  parser.add_option('--mode',dest='inputMode',type='string',default="initial",help=modeString1[0]+modeString1[1]+modeString1[2])
+  parser.add_option('--mode',dest='inputMode',type='string',default="iniself.__localDiCounterIndextial",help=modeString1[0]+modeString1[1]+modeString1[2])
 #	Debug level
   parser.add_option('-d',dest='debugMode',type='int',default=0,help='set debug: 0 (off - default), 1 = on')
   parser.add_option('-t',dest='testMode',type='int',default=0,help='set to test mode (do not send to database): 1')
