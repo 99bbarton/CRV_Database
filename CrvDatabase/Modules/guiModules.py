@@ -59,6 +59,9 @@
 ##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
+##  Modified by cmj2019May16... Change "hdbClient_v2_0" to "hdbClient_v2_2"
+##  Modified by cmj2019May23... Add update mode for modules...
+##  Modified by cmj2019May23... Change default database to "production"
 ##
 ##
 ##
@@ -76,7 +79,7 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
 sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
@@ -232,13 +235,17 @@ class multiWindow(Frame):
 ## --------------------------------------------------------------------
   def sendToProductionDatabase(self):
     self.__myModules.sendToProductionDatabase()
-
+## --------------------------------------------------------------------
+  def updateMode(self):
+    print("__multiWindow__::updateMode.... UPDATE MODE!... update entries to database!")
+    self.__myModules.updateMode()
 ## --------------------------------------------------------------------
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog [options] file1.txt \n")
   parser.add_option('-d',dest='debugMode',type='int',default=0,help='set debug: 0 (off - default), 1 = on')
   parser.add_option('-t',dest='testMode',type='int',default=0,help='set to test mode (do not send to database): 1')
-  parser.add_option('--database',dest='database',type='string',default="development",help='development or production')
+  parser.add_option('--database',dest='database',type='string',default="production",help='development or production')
+  parser.add_option('--update',dest='update',type='string',default="add",help='update to update entries')
   options, args = parser.parse_args()
   print("'__main__': options.debugMode = %s \n") % (options.debugMode)
   print("'__main__': options.testMode  = %s \n") % (options.testMode)
@@ -248,6 +255,7 @@ if __name__ == '__main__':
   root.title(bannerText)  
   root.geometry("+100+500")  ## set offset of primary window....
   myMultiForm = multiWindow(root,0,0)
+  if(options.update == "update"):  myMultiForm.updateMode()
   if(options.debugMode != 0): myMultiForm.turnOnDebug(options.debugMode)
   if(options.testMode != 0): 
     myMultiForm.turnOffSendToDatabase()
