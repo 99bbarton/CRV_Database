@@ -19,6 +19,7 @@
 ##09/24/18 - Added code to avoid duplicate timestamps by adding a "seconds" value to tests which have the same timestamp as the previous test
 ##           NOTE: This addition was forced due to improper labeling in data files - this code will no longer return correct source pos values if tests are not performed 1m from each side
 ##04/16/19 - Updated timestamper to use 4-digit year format
+##09/06/19 - Added index correction factor to handle an unplanned change to the number of tabs separating the timestamp and data in the source file that
 
 ################################################################### Instructions ##################################################################################
 ##-This script can be run from and editor or terminal, the command line, or simply by double clicking on the file.                                               ##
@@ -47,6 +48,7 @@ flagged = {} ##A dictionary which stores all input data lines which do not match
 db_dicounters = [] ##A list of all dicounters currently stored in the database - Extracted from the .csv dumpfile
 db_dicounterTests = [] ##A list of all dicounter tests currently stored in the database
 database = "" ##The name of the database to be accessed to obtain dicounter lengths and run checks over 
+PLOT_ONLY = True
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -203,6 +205,7 @@ def processData(comment = ""):
     skippedLogFile = open("snsNotinDB.txt","a+")
     skippedLogFile.write(datetime.now().strftime("\n" + "%d%b%Y_%H:%M") + ":\n")
     
+        
     for lineNum in range(len(lines)):
         formattedLine = ""
         
@@ -262,41 +265,54 @@ def processData(comment = ""):
                         print "WARNING: " + diSN + " could not be located in the database and was skipped"
                         continue
             else:
-                try:
-                    fetchCondition = "di_counter_id:eq:di-" + diSN
-                    dbTest = DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0]
+                if (PLOT_ONLY):
                     formattedLine += "," + darkType + ",,"
-                except:
-                    try: #Try query a second time if first query failed in case of connection issues et al
+                else:
+                    try:
                         fetchCondition = "di_counter_id:eq:di-" + diSN
                         dbTest = DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0]
                         formattedLine += "," + darkType + ",,"
                     except:
-                        skippedSNs.append(diSN)
-                        print "WARNING: " + diSN + " could not be located in the database and was skipped"
-                        continue
+                        try: #Try query a second time if first query failed in case of connection issues et al
+                            fetchCondition = "di_counter_id:eq:di-" + diSN
+                            dbTest = DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0]
+                            formattedLine += "," + darkType + ",,"
+                        except:
+                            skippedSNs.append(diSN)
+                            print "WARNING: " + diSN + " could not be located in the database and was skipped"
+                            continue
                 
-  
+            #Data before 04/19 had two tabs between timestamp and readouts, later data only has one - adjust accordingly
+            tabCorrector = 0
+            try:
+                float(lnComponents[3])
+                tabCorrector = -1
+            except:
+                tabCorrector = 0
             
             ##Add data values to output line
             
             if lnComponents[11].find("\n"):
                 lnComponents[11] = lnComponents[11][:-1]
-            data = lnComponents[8:12] + lnComponents[4:8] ##Switches B-side and A-side values to be in correct order of A then B
+
+            data = lnComponents[8+tabCorrector:12+tabCorrector] + lnComponents[4+tabCorrector:8+tabCorrector] ##Switches B-side and A-side values to be in correct order of A then B
 
             for channel in data:
                 formattedLine += channel + ","
 
             ##Add NaI crystal current data to output line - crystals are located 1m from B-side end
             if len(lnComponents) >= 16:
-                for val in lnComponents[12:17]:
+                for val in lnComponents[12+tabCorrector:17+tabCorrector]:
                     formattedLine += val + ","
                 formattedLine = formattedLine[:-3]
             else:
                 formattedLine += "-1,-1,-1,-1"
 
             #Add comment field (or empty string if no comment was provided) and newline
-            formattedLine += "," + comment + "\n"
+            if (formattedLine[-1:] == ","):
+                formattedLine += comment + "\n"
+            else:
+                formattedLine += "," + comment + "\n"
 
             ##Write output line to file
             outputFile.write(formattedLine)
@@ -327,10 +343,16 @@ def calcBiasV(temp):
 ##This function replaces getSourcePositionFromDump()
 ##NOTE: THIS FUNCTION ONLY RETURNS THE CORRECT VALUE IF TESTS WERE PERFORMED 1 METER FROM EACH SIDE - THIS IS A RESULT OF PEOPLE NOT FOLLOWING THE PRESCIBED LABELLING CONVENTIONS...
 def getSourcePositionFromDB(diSN,sourcePos,database):
+    global PLOT_ONLY
+    
     sourcePos_in_cm = -1
     
     fetchCondition = "di_counter_id:eq:di-" + diSN
-    diLength = float(DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0])
+    diLength=-1
+    if (PLOT_ONLY):
+        diLength = 10
+    else:
+        diLength = float(DatabaseQueryTool.query(database,"di_counters","length_m",fetchCondition)[0])
 
     if diLength > 0:
         if sourcePos.upper().find("A") >= 0:
