@@ -519,6 +519,7 @@ def sourceQA_local(inFilename = ""):
 
 
         if sn == "1140": #If golden dicounter
+
             #Extract date of the test
             date = datetime.strptime(lnComponents[3], dateFormat).date()
 
@@ -536,11 +537,12 @@ def sourceQA_local(inFilename = ""):
                 goldens[date][0][16] = float(lnComponents[2]) 
                 goldens[date][1][16] = float(lnComponents[2])
                 goldens[date][2][16] = float(lnComponents[2])
-                #Store currents
+                #Store currents                
                 for channel in range(0,4):
                     goldens[date][0][12 + channel] = float(lnComponents[7 + channel]) #A-side readouts
                     goldens[date][1][12 + channel] = float(lnComponents[11 + channel]) #B-side readouts
                     goldens[date][2][12 + channel] = float(lnComponents[15 + channel]) #Crystal readouts
+               
 
             elif int(lnComponents[4]) > 100: #If source close (1m) to B-side
                 #Store timestamp
@@ -583,6 +585,7 @@ def sourceQA_local(inFilename = ""):
                     goldens[date][2][6 + channel] = float(lnComponents[15 + channel]) #Crystal readouts weak
   
         else: #If not golden counter
+
             if lnComponents[5] == "dark" or lnComponents[5] == "crystal_dark": #If dark current measurement
                 #Store timestamp
                 dt = datetime.strptime(lnComponents[3], dateFormat)
