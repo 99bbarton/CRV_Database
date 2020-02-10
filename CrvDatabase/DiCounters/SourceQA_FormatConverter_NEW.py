@@ -48,7 +48,7 @@ flagged = {} ##A dictionary which stores all input data lines which do not match
 db_dicounters = [] ##A list of all dicounters currently stored in the database - Extracted from the .csv dumpfile
 db_dicounterTests = [] ##A list of all dicounter tests currently stored in the database
 database = "" ##The name of the database to be accessed to obtain dicounter lengths and run checks over 
-PLOT_ONLY = True
+PLOT_ONLY = False #If True, will not ping the database and will make up lenghts for dicounters- resulting file is therefore only useful
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
