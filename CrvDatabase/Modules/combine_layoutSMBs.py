@@ -38,8 +38,10 @@ class ModuleLayout:
 
        #Read in all the module info separately in case its useful ever
        self.mID = lines[0].split(",")[1]
+
        if len(self.mID) == 3:
            self.mID = "crvmod-" + self.mID
+
        self.mType = lines[1].split(",")[1]
        self.date = lines[2].split(",")[1]
        self.location = lines[3].split(",")[1]
@@ -166,8 +168,10 @@ class ModuleElectronics:
         lines = inFile.readlines()
 
         self.mID = lines[0].split(",")[2]
+
         if len(self.mID) == 3:
            self.mID = "crvmod-" + self.mID
+
         self.mType = lines[1].split(",")[2]
 
         if len(self.mID) < 10: #Should always be the form of crvmod-1##
@@ -197,11 +201,13 @@ class ModuleElectronics:
                         self.electronics.get(cols[0]).append(cols[ind])
                         ind += 1
                 if len(self.electronics.get(cols[0])) % 4 != 0: #There should be 4, 8, or 16 entries in a complete row, depending on type
-	            if self.electronics.get(cols[0])[0] == "A"  or self.electronics.get(cols[0])[0] == "B":
-			self.electronics[cols[0]].pop(0)
-		    else:
-	       		print "\nWARNING: " + cols[0] + " contains " + str(len(self.electronics.get(cols[0]))) + " entries"
+
+	                  if self.electronics.get(cols[0])[0] == "A"  or self.electronics.get(cols[0])[0] == "B":
+			                  self.electronics[cols[0]].pop(0)
+		                else:
+	       		            print "\nWARNING: " + cols[0] + " contains " + str(len(self.electronics.get(cols[0]))) + " entries"
 		    
+
     #-----------------------------------------------------------------------------------------
 
     #Print out the electronics layout
