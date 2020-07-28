@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 ##
-##  File = "guiModules.py"
-##  Derived from File = "guiDiCounters.py"
+##  File = "guiDiCounters.py"
 ##  Derived from File = "guiDiCounters_2017July11.py"
 ##  Derived from File = "guiDiCounters_2017July10.py"
 ##  Derived from File = "guiDiCounters_2017July7.py"
@@ -55,17 +54,13 @@
 ##  Modified by cmj2017Mar14... Add instructions for use in the call of the script.
 ##  Modified by cmj2017Mar14... Add test mode option; option to turn off send to database.
 ##  Modified by cmj2017May31... Add "di-" identifiery for di-counters.
-##  Modified by cmj2017Aug2... Change to drive Modules.py
 ##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
+##  Modified by cmj2018Aug03... Make the production database default
+##  Modified by cmj2018Apr27... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
-##  Modified by cmj2019May16... Change "hdbClient_v2_0" to "hdbClient_v2_2"
-##  Modified by cmj2019May23... Add update mode for modules...
-##  Modified by cmj2019May23... Change default database to "production"
-##  Modified by cmj2020Jun12... Add Layout and SMB to GUI
-##  Modified by cmj2020Jul02... Change the CRV graphics library from  cmjGuiLibGrid2018Oct1 --to--> cmjGuiLibGrid2019Jan30
-##  Modified by cmj2020Jul14... Add progress bar..
-##
+##  Modified by cmj2019May23... Change "hdbClient_v2_0" to "hdbClient_v2_2"
+##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities; cmjGuiLibGrid2018Oct1->cmjGuiLibGrid2019Jan30
 ##
 ##
 sendDataBase = 0  ## zero... don't send to database
@@ -82,16 +77,16 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
-sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list, 2020 fix file string.
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Apr27
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid2019Jan30 import *
-from Modules import *
+from cmjGuiLibGrid2019Jan30 import *       ## 2020Jul09 
+from DiCounters import *
 
-ProgramName = "guiModules.py"
-Version = "version2020.07.02"
+ProgramName = "guiDiCounters.py"
+Version = "version2020.07.09"
 
 ##
 ## -------------------------------------------------------------
@@ -101,7 +96,8 @@ Version = "version2020.07.02"
 class multiWindow(Frame):
   def __init__(self,parent=NONE, myRow = 0, myCol = 0):
     Frame.__init__(self,parent)
-    self.__myModules  = crvModules()
+    self.__myDiCounters  = diCounter()
+    #self.__myDiCounters.sendToDevelopmentDatabase()  ## set up communications with database
     self.__labelWidth = 25
     self.__entryWidth = 20
     self.__buttonWidth = 5
@@ -143,7 +139,7 @@ class multiWindow(Frame):
     self.__myInstructions = myScrolledText(self)
     self.__myInstructions.setTextBoxWidth(50)
     self.__myInstructions.makeWidgets()
-    self.__myInstructions.setText('','Instructions/InstructionsForGuiModules2020Jul02.txt')
+    self.__myInstructions.setText('','Instructions/InstructionsForGuiDiCounters2017Jul7.txt')
     self.__myInstructions.grid(row=self.__firstRow,column=self.__col,columnspan=2)
     self.__firstRow += 1
 ##
@@ -153,22 +149,25 @@ class multiWindow(Frame):
     self.__getValues = Button(self,text='Get Input File',command=self.openFileDialog,width=self.__buttonWidth,bg='lightblue',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
-##	Send Module Layout information to database...
-    self.__getValues = Button(self,text='Enter Module Layout',command=self.startLayout,width=self.__buttonWidth,bg='green',fg='black')
+##	Send initial Sipm information: PO number, batches recieved and vendor measurements...
+    self.__getValues = Button(self,text='Initial',command=self.startInitialEntries,width=self.__buttonWidth,bg='green',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
-    ##	Send Module Smb/Cmb information to database... add Sipms...
-    self.__getValues = Button(self,text='Enter Module Smb/Cmb',command=self.startSmbCmb,width=self.__buttonWidth,bg='green',fg='black')
+    self.__getValues = Button(self,text='Measurements',command=self.sendMeasurements,width=self.__buttonWidth,bg='green',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
-    self.__getValues = Button(self,text='Enter Module Tests',command=self.sendMeasurements,width=self.__buttonWidth,bg='green',fg='black')
+###	Setup Update option
+    self.__col = 1
+    self.__secondRow = 1
+    self.__buttonWidth = 20
+    self.__getValues = Button(self,text='Update',command=self.__myDiCounters.updateMode(),width=self.__buttonWidth,bg='orange',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
 ###	Setup Debug option
     self.__col = 1
     self.__secondRow = 2
     self.__buttonWidth = 20
-    self.__getValues = Button(self,text='Turn on Test',command=self.__myModules.turnOffSendToDatabase,width=self.__buttonWidth,bg='orange',fg='black')
+    self.__getValues = Button(self,text='Turn on Test',command=self.__myDiCounters.turnOffSendToDatabase,width=self.__buttonWidth,bg='orange',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
 ###	Setup Debug option
@@ -211,64 +210,57 @@ class multiWindow(Frame):
   def openFileDialog(self):
     self.__filePath=tkFileDialog.askopenfilename()
     print("__multiWindow__::openDialogFile = %s \n") % (self.__filePath)
-    self.__myModules.openFile(self.__filePath)
-    self.__myModules.openLogFile()
+    #self.__myDiCounters.turnOffDebug()
+    self.__myDiCounters.openFile(self.__filePath)
+    self.__myDiCounters.openLogFile()
+    #self.__myDiCounters.turnOnSendToDatabase()
+    #self.__myDiCounters.sendToDevelopmentDatabase()
 ##
 ## --------------------------------------------------------------------
 ##
-  def startLayout(self):
-    self.__myModules.readFileLayout("initial")
-    self.__myModules.sendLayoutToDatabase()
-    ##
-## --------------------------------------------------------------------
-##
-  def startSmbCmb(self):
-    self.__myModules.readFileSmbCmb("initial")
-    self.__myModules.sendSmbCmbToDatabase()
+  def startInitialEntries(self):
+    self.__myDiCounters.readFile("initial")
+    self.__myDiCounters.sendDiCounterToDatabase()
 ##
 ## --------------------------------------------------------------------
 ##
   def sendMeasurements(self):
-    self.__myModules.readFile("measure")
-    self.__myModules.sendTestToDatabase()
+    self.__myDiCounters.readFile("measure")
+    self.__myDiCounters.sendDiCounterTestsToDatabase()
 ##
 ## --------------------------------------------------------------------
 ##
-  def turnOnDebug(self):
-    self.__myModules.turnOnDebug(1) 
-    ##
-## -------------------------------------------------------------------
-  def setDebugLevel(self,tempDebugLevel):
-    print("...multiWindow::getFromProductionDatabase... Set Debug Level to = %s \n") % (tempDebugLevel)
-    self.__myModules.turnOnDebug(tempDebugLevel)
+  def sendImages(self):
+    self.__myDiCounters.readFile("image")
+    self.__myDiCounters.sendDiCounterImageToDatabase()
+##
+## --------------------------------------------------------------------
+##
+  def turnOnDebug(self,tempDebug):
+    self.__myDiCounters.turnOnDebug(tempDebug)
 ## --------------------------------------------------------------------
   def turnOnSendToDatabase(self):
-    self.__myModules.turnOnSendToDatabase()
+    self.__myDiCounters.turnOnSendToDatabase()
 ## --------------------------------------------------------------------
   def turnOffSendToDatabase(self):
-    self.__myModules.turnOffSendToDatabase()
+    self.__myDiCounters.turnOffSendToDatabase()
 ## --------------------------------------------------------------------
   def sendToDevelopmentDatabase(self):
-    self.__myModules.sendToDevelopmentDatabase()
+    self.__myDiCounters.sendToDevelopmentDatabase()
 ## --------------------------------------------------------------------
   def sendToProductionDatabase(self):
-    self.__myModules.sendToProductionDatabase()
-    ## --------------------------------------------------------------------
-  def setSleepTime(self,tempSleep):
-    self.__myModules.setSleepTime(tempSleep)
+    self.__myDiCounters.sendToProductionDatabase()
 ## --------------------------------------------------------------------
-  def updateMode(self):
-    print("__multiWindow__::updateMode.... UPDATE MODE!... update entries to database!")
-    self.__myModules.updateMode()
+  def setToUpdateMode(self):
+    self.__myDiCounters.updateMode()
+
 ## --------------------------------------------------------------------
 if __name__ == '__main__':
   parser = optparse.OptionParser("usage: %prog [options] file1.txt \n")
   parser.add_option('-d',dest='debugMode',type='int',default=0,help='set debug: 0 (off - default), 1 = on')
   parser.add_option('-t',dest='testMode',type='int',default=0,help='set to test mode (do not send to database): 1')
-  parser.add_option('--database',dest='database',type='string',default="production",help='development or production')
-  parser.add_option('--update',dest='update',type='string',default="add",help='update to update entries')
-  parser.add_option('--debuglevel',dest='debugLevel',type='int',default=0,help='set debug: 0 (off - default), 1, 2, 3, ... ,10')
-  parser.add_option('--sleep',dest='sleepTime',type='float',default=1.0,help='set sleep interval between database operations (default= 1.0)')
+  parser.add_option('--database',dest='database',type='string',default="production",help='--database = ''development''... send to production database')
+  parser.add_option('--update',dest='update',type='int',default=0,help='--update = 1... change from insert to update mode')
   options, args = parser.parse_args()
   print("'__main__': options.debugMode = %s \n") % (options.debugMode)
   print("'__main__': options.testMode  = %s \n") % (options.testMode)
@@ -278,18 +270,16 @@ if __name__ == '__main__':
   root.title(bannerText)  
   root.geometry("+100+500")  ## set offset of primary window....
   myMultiForm = multiWindow(root,0,0)
-  if(options.update == "update"):  myMultiForm.updateMode()
   if(options.debugMode != 0): myMultiForm.turnOnDebug(options.debugMode)
+  if(options.update == 1) : myMultiForm.setToUpdateMode()
   if(options.testMode != 0): 
     myMultiForm.turnOffSendToDatabase()
   else:
     myMultiForm.turnOnSendToDatabase()
     if(options.database == "development"): myMultiForm.sendToDevelopmentDatabase()
     else: myMultiForm.sendToProductionDatabase()
-  if(options.debugLevel != 0): myMultiForm.setDebugLevel(options.debugLevel)
-  if(options.sleepTime != 1.0): myMultiForm.setSleepTime(options.sleepTime)
-  myMultiForm.grid()  ## define grid
-  root.mainloop()     ## run loop.
+  myMultiForm.grid()
+  root.mainloop()
 
 
 

@@ -59,6 +59,13 @@
 ##  Modified by cmj2018Jun8... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
+##  Modified by cmj2018Oct11.... Change to hdbClient_v2_2
+##  Modified by cmj2018Oct11.... strip trailing white-space characters for comments.
+##  Modified by cmj2018Oct12...  limit comments to 126 characters.
+##  Modified by cmj2019May23... Change "hdbClient_v2_0" to "hdbClient_v2_2"
+##  Modified by cmj2019May23... Add a loop to give maxTries to send information to database.
+##  Modified by cmj2019May23... Add a changeable value for the sleep interval as we have found it can be smaller.
+##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities
 ##
 ##
 ##
@@ -73,14 +80,14 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Jun8
-sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
 
 ProgramName = "DiCounters"
-Version = "version2018.10.04"
+Version = "version2020.07.09"
 
 
 ##############################################################################################
@@ -97,6 +104,8 @@ class diCounter(object):
     self.__url = ''
     self.__password = ''
     self.__update = 0
+    self.__maxTries = 3		## set up maximum number of tries to send information to the database.
+    self.__sleepTime = 0.5	## sleep time between data transmission.
     ## Di-Counters Initial information
     self.__startTime = strftime('%Y_%m_%d_%H_%M')
 ## -----------------------------------------------------------------
@@ -298,27 +307,29 @@ class diCounter(object):
 	  self.__myDataLoader1.addRow(self.__diCounterString)
 	else:
 	  self.__myDataLoader1.addRow(self.__diCounterString,'update')
-	(self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
-	print "self.__text = %s" % self.__text
-	time.sleep(2)     ## sleep so we don't send two records with the same timestamp....
-	if self.__retVal:				## sucess!  data sent to database
-	  print "XXXX __diCounter__::sendDiCounterToDatabase: Counter Transmission Success!!!"
-	  print self.__text
-	  self.__logFile.write('XXXX__diCounter__::sendDiCounterToDatabase: sent '+self.__localDiCounterId+' to database')
-	elif self.__password == '':
-	  print('XXXX__diCounter__::sendDiCounterToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
-	else:
-	  print "XXXX__diCounter__::sendDiCounterToDatabase:  Counter Transmission: Failed!!!"
-	  if(self.__cmjDebug > 1): 
-	    print("XXXX__diCounter__:sendCounterToDatabase... Counter Transmission Failed: \n")
-	    print("XXXX__diCounter__:sendCounterToDatabase... String sent to dataLoader: \n")
-	    print("XXXX__diCounter__:sendCounterToDatabase... self.__diCounterString \%s \n") % (self.__diCounterString)
-	  print ("XXXX__diCounter__:sendCounterToDatabase... self.__code = %s \n") % (self.__code)
-	  print ("XXXX__diCounter__:sendCounterToDatabase... self.__text = %s \n") % (self.__text) 
-	  self.__logFile.write("XXXX__diCounter__::sendDiCounterToDatabase:  Counter Transmission: Failed!!!")
-	  self.__logFile.write('XXXX__diCounter__:sendCounterToDatabase... self.__code = '+self.__code+'\n')
-	  self.__logFile.write('XXXX__diCounter__:sendCounterToDatabase... self.__text = '+self.__text+'\n')
-	  ## remove this for di-counters... send as many as possible!!! return 1		## problem with transmission!   communicate failure
+	for n in range(0,self.__maxTries):		## cmj2019May23... try to send maxTries time to database
+	  (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
+	  print "self.__text = %s" % self.__text
+	  time.sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
+	  if self.__retVal:				## sucess!  data sent to database
+	    print "XXXX __diCounter__::sendDiCounterToDatabase: di-Counter Transmission Success!!!"
+	    print self.__text
+	    self.__logFile.write('XXXX__diCounter__::sendDiCounterToDatabase: sent '+self.__localDiCounterId+' to database')
+	    break
+	  elif self.__password == '':
+	    print('XXXX__diCounter__::sendDiCounterToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+	    break
+	  else:
+	    print "XXXX__diCounter__::sendDiCounterToDatabase:  di-Counter Transmission: Failed!!!"
+	    if(self.__cmjDebug > 1): 
+	      print("XXXX__diCounter__:sendCounterToDatabase... di-Counter Transmission Failed: \n")
+	      print("XXXX__diCounter__:sendCounterToDatabase... String sent to dataLoader: \n")
+	      print("XXXX__diCounter__:sendCounterToDatabase... self.__diCounterString \%s \n") % (self.__diCounterString)
+	    print ("XXXX__diCounter__:sendCounterToDatabase... self.__code = %s \n") % (self.__code)
+	    print ("XXXX__diCounter__:sendCounterToDatabase... self.__text = %s \n") % (self.__text) 
+	    self.__logFile.write("XXXX__diCounter__::sendDiCounterToDatabase:  di-Counter Transmission: Failed!!!")
+	    self.__logFile.write('XXXX__diCounter__:sendCounterToDatabase... self.__code = '+self.__code+'\n')
+	    self.__logFile.write('XXXX__diCounter__:sendCounterToDatabase... self.__text = '+self.__text+'\n')
     return 0
 ## -----------------------------------------------------------------
 ## -----------------------------------------------------------------
@@ -378,21 +389,24 @@ class diCounter(object):
 	  self.__myDataLoader1.addRow(self.__diCounterString)
 	else:
 	  self.__myDataLoader1.addRow(self.__diCounterString,'update')
-	(self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
-	print "self.__text = %s" % self.__text
-	time.sleep(2)     ## sleep so we don't send two records with the same timestamp....
-	if self.__retVal:				## sucess!  data sent to database
-	  print "XXXX __diCounter__::sendDiCounterImageToDatabase: Counter Transmission Success!!!"
-	  print self.__text
-	elif self.__password == '':
-	  print('XXXX __diCounter__::sendDiCounterImageToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
-	else:
-	  print "XXXX __diCounter__::sendDiCounterImageToDatabase:  Counter Transmission: Failed!!!"
-	  print self.__code
-	  print self.__text 
-	  self.__logFile.write("XXXX __diCounter__::sendDiCounterImageToDatabase:  Counter Transmission: Failed!!!")
-	  self.__logFile.write(self.__code)
-	  self.__logFile.write(self.__code)
+	for n in range(0,self.__maxTries):		## cmj2019May23... try to send maxTries time to database
+	  (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
+	  print "self.__text = %s" % self.__text
+	  time.sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
+	  if self.__retVal:				## sucess!  data sent to database
+	    print "XXXX __diCounter__::sendDiCounterImageToDatabase: di-Counter Image Transmission Success!!!"
+	    print self.__text
+	    break
+	  elif self.__password == '':
+	    print('XXXX __diCounter__::sendDiCounterImageToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+	    break
+	  else:
+	    print "XXXX __diCounter__::sendDiCounterImageToDatabase:  di-Counter Image Transmission: Failed!!!"
+	    print self.__code
+	    print self.__text 
+	    self.__logFile.write("XXXX __diCounter__::sendDiCounterImageToDatabase:  di-Counter Image Transmission: Failed!!!")
+	    self.__logFile.write(self.__code)
+	    self.__logFile.write(self.__code)
 	  ## remove this for di-counters.... add as many as we can!  return 1		## problem with transmission!   communicate failure
     return 0
 ## -----------------------------------------------------------------
@@ -446,19 +460,21 @@ class diCounter(object):
 	      self.__myDataLoader1.addRow(self.__diCounterTestsString)
 	    else:
 	      self.__myDataLoader1.addRow(self.__diCounterTestsString,'update')
-	    (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
-	    print "self.__text = %s" % self.__text
-	    time.sleep(2)     ## sleep so we don't send two records with the same timestamp....
-	    if self.__retVal:				## sucess!  data sent to database
-	      print "XXXX __diCounter__::sendDiCounterTestsToDatabase: Counter Transmission Success!!!"
-	      print self.__text
-	    elif self.__password == '':
-	      print('XXXX __diCounter__::sendDiCounterTestsToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
-	    else:
-	      print "XXXX __diCounter__::sendDiCounterTestsToDatabase:  Counter Transmission: Failed!!!"
-	      print self.__code
-	      print self.__text 
-	      ##return 1		## problem with transmission!   communicate failure
+	    for n in range(0,self.__maxTries):		## cmj2019May23... try to send maxTries time to database
+	      (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
+	      print "self.__text = %s" % self.__text
+	      time.sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
+	      if self.__retVal:				## sucess!  data sent to database
+		print "XXXX __diCounter__::sendDiCounterTestsToDatabase: di-Counter "+self.__localDiCounterTestsId+" test result Transmission Success!!!"
+		print self.__text
+		break
+	      elif self.__password == '':
+		print('XXXX __diCounter__::sendDiCounterTestsToDatabase: Test mode... DATA WILL NOT BE SENT TO THE DATABASE')()
+		break
+	      else:
+		print "XXXX __diCounter__::sendDiCounterTestsToDatabase:  di-Counter "+self.__localDiCounterTestsId+" test result Transmission: Failed!!!"
+		print self.__code
+		print self.__text 
 	else:
 	  if(self.__cmjDebug < 0):
 	    print("XXXX __diCounter__::sendDiCounterTestsToDatabase: self.__diCounterTestsString = <%s>") % (self.__diCounterTestsString) 
@@ -519,7 +535,11 @@ class diCounter(object):
     self.__layerPosition[self.__item[0]] = None	## The initial value for the module position is null
 						## Update this value when the module is built.
     self.__diCounterModuleLocation[self.__item[0]] = self.__item[16]
-    self.__diCounterComments[self.__item[0]] = self.__item[17]
+    self.__diCounterComments[self.__item[0]] = self.__item[17].rstrip() ## cmj2018Oct11... remove trailing white characters
+    if(len(self.__diCounterComments[self.__item[0]]) > 126) :           ## cmj2018Oct12
+      self.__tempString = self.__diCounterComments[self.__item[0]]
+      self.__diCounterComments[self.__item[0]] = ''
+      self.__diCounterComments[self.__item[0]] = self.__tempString[0:126]  ## limit comment string to 127 characters
 ## -----------------------------------------------------------------
 ##	Read in diCounter image file information: option 2: "image"
   def storeDiCounterImage(self,tempCounter):
@@ -529,7 +549,11 @@ class diCounter(object):
     self.__diCounterImageDate[self.__item[0]+'_'+self.__item[2]] = self.__item[1]
     self.__diCounterPosition[self.__item[0]+'_'+self.__item[2]] = self.__item[2]
     self.__diCounterImageFile[self.__item[0]+'_'+self.__item[2]] = self.__item[3]
-    self.__diCounterImageComment[self.__item[0]+'_'+self.__item[2]] = self.__item[4]
+    self.__diCounterImageComment[self.__item[0]+'_'+self.__item[2]] = self.__item[4].rstrip() ## cmj2018Oct11... remove trailing white characters
+    if(len(self.__diCounterImageComment[self.__item[0]+'_'+self.__item[2]]) > 126) :          ## cmj2018Oct12
+      self.__tempString = self.__diCounterImageComment[self.__item[0]+'_'+self.__item[2]]
+      self.__diCounterImageComment[self.__item[0]+'_'+self.__item[2]] = ''
+      self.__diCounterImageComment[self.__item[0]+'_'+self.__item[2]] = self.__tempString[1:126]   ## limit comment string to 127 characters
 ## -----------------------------------------------------------------
 ##	Read in diCounter measured test results: option 3: "measure"
   def storeDiCounterMeasure(self,tempCounter):
@@ -575,6 +599,10 @@ class diCounter(object):
       self.__diCounterTestComment[self.__item[0]] = None
     else: 
       self.__diCounterTestComment[self.__item[0]] = self.__item[19].rstrip()
+      if(len(self.__diCounterTestComment[self.__item[0]]) > 126) :            ## limit comment string to 127 characters
+	self.__tempString = self.__diCounterTestComment[self.__item[0]]	      ## cmj2018Oct12
+	self.__diCounterTestComment[self.__item[0]] = ''
+	self.__diCounterTestComment[self.__item[0]] = self.__tempString[0:126]
     if(self.__cmjDebug > 4): 
       print("XXXX __storeDiCounterMeasure__ self.__diCounterTestComment[%s] = %s \n") % (self.__item[0],self.__diCounterTestComment[self.__item[0]])
 ##
