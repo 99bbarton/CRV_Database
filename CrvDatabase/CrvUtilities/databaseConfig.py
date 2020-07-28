@@ -24,31 +24,18 @@
 ##
 ##	2018Feb16... Add urls for updated databases.
 ##	2018Sep19... Change URL's for the development database write dbweb5.fnal.gov -> dbweb6.fnal.gov
+##	2020May23... Correct path for electronics development psswrd....
+##	2020Jun16... Change Query URL
+##      2020Jul13... remove URL's for database from this code an read them in from a file.
 ##
 class databaseConfig(object):
   def __init__(self):
     self.__cmjDebug = 0  ## set to 1 to print debug statements
-    #self.__queryUrl = "http://ifb-data.fnal.gov:8131/QE/mu2e_hw/app/SQ/query"  ## url updated 2018Feb15
-    #self.__writeUrl = "http://dbweb5.fnal.gov:8080/mu2edev/hdb/loader"
-    #self.__writeUrl = "http://dbweb5.fnal.gov:8443/mu2edev/hdb/loader"  ## url updataed 2018Feb16
-    #self.__productionQueryUrl ="http://ifb-data.fnal.gov:8131/QE/mu2e_hw/app/SQ/query"
-    #self.__productionWriteUrl = "http://ifb-data.fnal.gov:8133/mu2e/hdb/loader"
-
-    #self.__queryUrl = "http://ifb-data.fnal.gov:9090/QE/hw/app/SQ/query"  ## url updated 2018Feb27 - Removed 2018Oct1
-    #self.__queryUrl = "http://dbdata0vm.fnal.gov:9090/QE/mu2e/prod/app/SQ/query?"  ## url updated 2018Oct1... non-cached... suggested by Igor via ticket
-    self.__queryUrl = "http://dbdata0vm.fnal.gov:9090/QE/hw/app/SQ/query"  ## url updated 2018Oct4.. suggested by Steve's answer to ticket INC000000986683
-    self.__writeUrl = "https://dbweb6.fnal.gov:8443/hdb/mu2edev/loader"  ## url updated 2018Sep19
-    #self.__productionQueryUrl ="http://ifb-data.fnal.gov:9090/QE/hw/app/SQ/query" ## url updated 2018Feb27  - Removed 2018Oct1
-    #self.__productionQueryUrl ="http://dbdata0vm.fnal.gov:9090/QE/mu2e/prod/app/SQ/query?" ## url updated 2018Oct1... non-cached... suggested by Igor via ticket
-    self.__productionQueryUrl ="http://dbdata0vm.fnal.gov:9090/QE/hw/app/SQ/query" ## url updated 2018Oct4.. suggested by Steve's answer to ticket INC000000986683
-    self.__productionWriteUrl = "https://dbweb6.fnal.gov:8443/hdb/mu2e/loader"  ## url updated 2018Apr27 
-                                                                                 ## Vladimir's Email 
-    #print '==============>>>> databaseConfig -----%s----- \n' % self.__queryUrl
     self.__sipmKey  = ' '
     self.__extrusionKey = ' '
 ## -------------------------------------------------------------
   def getVersion(self):
-    self.__version="2018Feb28"
+    self.__version="2020Jul13"
     return self.__version
 ## -------------------------------------------------------------
   def setDebugOn(self):
@@ -59,17 +46,45 @@ class databaseConfig(object):
     self.__cmjDebug = 0
     print "..databaseConfig::setDebugOff \n"
 ## -------------------------------------------------------------
+##  Modified by cmj2020Jul13 to read URL from File
   def getQueryUrl(self):
-    if (self.__cmjDebug == 1 ): 
-      print '..databaseConfig::getQueryUrl...'
-      print '..databaseConfig:self.__queryUrl = %s \n' % self.__queryUrl
+    if (self.__cmjDebug == 1): print '..databaseConfig.getQueryUrl().... enter'
+    self.__queryUrl = ''
+    try:
+      if (self.__cmjDebug == 1 ): print '..databaseConfig.getQueryUrl()... before open'
+      self.__tempFile=open('../CrvUtilities/86DevelopmentQueryUrl.txt','r')
+      if (self.__cmjDebug == 1): print '..databaseConfig.getQueryUrl()... after open'
+    except Exception as e:
+      self.__tempFile.close()
+      print 'exception: %s' % e
+      print 'file not found: contact database administrators \n'
+      print 'the program cannot access the database... \n'
+      print 'databaseConfig.getQueryUrl():No_Url_Found \n'
+      return 'from: databaseConfig.getQueryUrl:No_Url_Found'
+    self.__queryUrl=self.__tempFile.read()
+    if (self.__cmjDebug == 1):  print '..databaseConfig.getQueryUrl():self.__queryUrl = %s \n' % self.__queryUrl
+    self.__tempFile.close()
     return self.__queryUrl.rstrip()
 ## -------------------------------------------------------------
+##  Modified by cmj2020Jul13 to read URL from File
   def getWriteUrl(self):
-    if (self.__cmjDebug == 1 ): 
-      print '..databaseConfig::getWriteUrl...'
-      print '..databaseConfig:self.__writeUrl = %s \n' % self.__writeUrl
-    return self.__writeUrl
+    if (self.__cmjDebug == 1): print '..databaseConfig.getWriteUrl().... enter'
+    self.__writeUrl = ''
+    try:
+      if (self.__cmjDebug == 1 ): print '..databaseConfig::getWriteUrl()... before open'
+      self.__tempFile=open('../CrvUtilities/86DevelopmentWriteUrl.txt','r')
+      if (self.__cmjDebug == 1): print '..databaseConfig::getWriteUrl()... after open'
+    except Exception as e:
+      self.__tempFile.close()
+      print 'exception: %s' % e
+      print 'file not found: contact database administrators \n'
+      print 'the program cannot access the database... \n'
+      print 'from: databaseConfig.getWriteUrl:No_Url_Found \n'
+      return 'from: databaseConfig.getWriteUrl:No_Url_Found'
+    self.__writeUrl=self.__tempFile.read()
+    if (self.__cmjDebug == 1):  print '..databaseConfig:self.__writeUrl = %s \n' % self.__writeUrl
+    self.__tempFile.close()
+    return self.__writeUrl.rstrip()
 ## -------------------------------------------------------------
 ##  This is the sipm development key
   def getSipmKey(self):
@@ -117,7 +132,7 @@ class databaseConfig(object):
     self.__electronicsKey = ''
     try:
       if (self.__cmjDebug == 1 ): print '..databaseConfig::getElectronicsKey... before open'
-      self.__tempFile=open('../Utilities/86Electronics.txt','r')
+      self.__tempFile=open('../CrvUtilities/86Electronics.txt','r')
       if (self.__cmjDebug == 1): print '..databaseConfig::getElectronicsKey... after open'
     except Exception as e:
 	print 'exception: %s' % e
@@ -187,16 +202,42 @@ class databaseConfig(object):
 ##--------------------------------------------------------------
 ## -------------------------------------------------------------
 ##		Production database accessor functions....
+##  Modified by cmj2020Jul13 to read Url from file
   def getProductionQueryUrl(self):
-    if (self.__cmjDebug == 1 ): 
-      print '..databaseConfig::getProductionQueryUrl...'
-      print '..databaseConfig:self.__productionQueryUrl = %s \n' % self.__productionQueryUrl
+    if (self.__cmjDebug == 1): print '..databaseConfig.getProductionQueryUrl.()... enter'
+    self.__productionQueryUrl = ''
+    try:
+      if (self.__cmjDebug == 1 ): print '..databaseConfig.getProductionQueryUrl()... before open'
+      self.__tempFile=open('../CrvUtilities/86ProductionQueryUrl.txt','r')
+      if (self.__cmjDebug == 1): print '..databaseConfig.getProductionQueryUrl()... after open'
+    except Exception as e:
+      print 'exception: %s' % e
+      self.__tempFile.close()
+      print 'file not found: contact database administrators \n'
+      print 'the program will cannot access the database... \n'
+      return 'from: databaseConfig.getProductionQueryUrl():::No_Url_Found'
+    self.__productionQueryUrl=self.__tempFile.read()
+    if (self.__cmjDebug == 1):  print '..databaseConfig.getProductionQueryUrl():self.__productionQueryUrl = %s \n' % self.__productionQueryUrl
+    self.__tempFile.close()
     return self.__productionQueryUrl.rstrip()
 ## -------------------------------------------------------------
+## cmj2020Jul13... read the URL from a file
   def getProductionWriteUrl(self):
-    if (self.__cmjDebug == 1 ): 
-      print '..databaseConfig::getProductionWriteUrl...'
-      print '..databaseConfig:self.__productionWriteUrl = %s \n' % self.__productionWriteUrl
+    if (self.__cmjDebug == 1): print '..databaseConfig.getProductionWriteUrl() enter'
+    self.__productionWriteUrl = ''
+    try:
+      if (self.__cmjDebug == 1 ): print '..databaseConfig::getProductionWriteUrl()... before open'
+      self.__tempFile=open('../CrvUtilities/86ProductionWriteUrl.txt','r')
+      if (self.__cmjDebug == 1): print '..databaseConfig::getProductionWriteUrl()... after open'
+    except Exception as e:
+      self.__tempFile.close()
+      print 'exception: %s' % e
+      print 'file not found: contact database administrators \n'
+      print 'the program cannot access the database... \n'
+      return 'from: databaseConfig.self.__productionWriteUrl():No_Url_Found'
+    self.__productionWriteUrl=self.__tempFile.read()
+    if (self.__cmjDebug == 1):  print '..databaseConfig.self.__productionWriteUrl():self.__productionWriteUrl = %s \n' % self.__productionWriteUrl
+    self.__tempFile.close()
     return self.__productionWriteUrl.rstrip()
 ## -------------------------------------------------------------
 ##  This is the sipm production key
@@ -246,7 +287,7 @@ class databaseConfig(object):
     self.__electronicsKey = ''
     try:
       if (self.__cmjDebug == 1 ): print '..databaseConfig::getElectronicsProductionKey... before open'
-      self.__tempFile=open('../CrvUtilities/86ElectroincsPro.txt','r')
+      self.__tempFile=open('../CrvUtilities/86ElectronicsPro.txt','r')  ## cmj2020May28... fixed bug... file name.
       if (self.__cmjDebug == 1): print '..databaseConfig::getElectronicsProductionKey... after open'
     except Exception as e:
       print 'exception: %s' % e
