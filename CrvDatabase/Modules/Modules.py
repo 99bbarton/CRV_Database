@@ -95,7 +95,10 @@ class crvModules(object):
     self.__password3 = '' ## for Electronics Tables
     self.__cmjDebug = 0   ## initialize without debugs
     ## List the corner case modules
-    self.__moduleCornerCaseId = ['crvmod-101','crvmod-102','crvmod-103','crvmod-104','crvmod-105','crvmod-114','crvmod-115']
+
+    #None of these modules need to be treated any differently since every file will have the exact same format. ##################
+    #self.__moduleCornerCaseId = ['crvmod-101','crvmod-102','crvmod-103','crvmod-104','crvmod-105','crvmod-114','crvmod-115']
+    self.__moduleCornerCaseId = []
     self.__dummyCounter = 0 ## A dummy counter to give a unique id for the CmbId if it is a reflector or absorber
     ## Module Initial information
     self.__currentModuleId = ''		## For the one module per spreadsheet scheme... store the module id
@@ -233,7 +236,8 @@ class crvModules(object):
 ##	Sort, define and store information here...
 ##	For the new SMB csv files, read the file once to get the diCounter Ids stored in layer and position...
     if(tempInputMode == 'initial'):
-      tempInputMode2='staggered'
+      #tempInputMode2='staggered' #Merged files will never be staggered... Set the mode to non-staggered regardless. ############################################
+      tempInputMode2 = 'non-staggered'
       for self.__newLine in self.__fileLine:
 	if(self.__cmjDebug > 8): print("self.__newLine = %s \n") % (self.__newLine)
 	if (self.__newLine.find('Module_Id') != -1): 		
