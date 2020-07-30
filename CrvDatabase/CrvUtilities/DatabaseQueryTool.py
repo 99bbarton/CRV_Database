@@ -19,9 +19,10 @@
 #####################################################################################################################################################################
 
 import sys
-#sys.path.append("../../Utilities/DataLoader.zip")
-sys.path.append("../../Utilities/")
-sys.path.append("../CrvUtilities/crvUtilities2018.zip")
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list
+from databaseConfig import *
+
 from databaseConfig import * 
 from DataLoader import *
 
@@ -91,7 +92,7 @@ def getQueryParameters():
         if selector == 0:
             database = "mu2e_hardware_dev"
         elif selector == 1:
-            database = "mu2e_hardware_prd" ###############################Needs the correct name for the production database
+            database = "mu2e_hardware_prd" 
 
         ##Table selection
         print '\nSelect which table you wish to query: Enter "0" for Dicounters, "1" for Dicounter Tests, "2" for Modules, or "3" for Module Tests: '

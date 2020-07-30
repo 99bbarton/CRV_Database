@@ -22,7 +22,8 @@
 
 import sys
 from datetime import datetime, timedelta ##To create random, always unique timestamps for tests where no timestamp was recorded
-##sys.path.append("../DatabaseQueryTool.py")
+
+sys.path.append("../CrvUtilities/")
 import DatabaseQueryTool ##To retrieve information from the database
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -21,6 +21,7 @@
 #------------------------------------------------------------------------------------------------------------
 
 import sys
+sys.path.append("../CrvUtilities/")
 import DatabaseQueryTool
 import SNTools
 import SourceAnalysisTools

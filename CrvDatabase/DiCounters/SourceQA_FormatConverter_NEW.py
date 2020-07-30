@@ -36,7 +36,7 @@
 ###################################################################################################################################################################
 
 import sys
-##sys.path.append("../DatabaseQueryTool.py")
+sys.path.append("../CrvUtilities/") # For DatabaseQueryTool.py
 import DatabaseQueryTool ##To query database
 from datetime import *
 
