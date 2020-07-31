@@ -1,0 +1,7 @@
+##
+##  File = "makeCrvUtilitiesZip"
+##
+#set inFile "cmjGuiLibGrid2017Jun23.py databaseConfig.py myTime.py"
+#zip -r crvUtilities2017.zip cmjGuiLibGrid2017Jun23.py databaseConfig.py myTime.py
+##zip -r crvUtilities.zip cmjGuiLibGrid2017Jun23.py databaseConfig.py myTime.py  generalUtilities.py
+zip -r crvUtilities.zip cmjGuiLibGrid2017Jun23.py databaseConfig.py myTime.py  generalUtilities.py

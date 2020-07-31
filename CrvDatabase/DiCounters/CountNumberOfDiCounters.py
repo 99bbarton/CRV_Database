@@ -14,15 +14,18 @@
 ##  Modified by cmj2018Apr27... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
+##  Modified by cmj2019May16... Change default database to "production"
+##  Modified by cmj2019May16... Change "hdbClient_v2_0" to "hdbClient_v2_2
+##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities; cmjGuiLibGrid2018Oct1->cmjGuiLibGrid2019Jan30
 ##
 #!/bin/env python
 from Tkinter import *         # get widget class
 import sys
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Apr27
-sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Apr27
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09
 from DataLoader import *
 from databaseConfig import *
-from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled list
+from cmjGuiLibGrid2019Jan30 import *       ## 2020Jul09
 #rom scrollList import *  ## temp... import scroll list... afterwards include in cmjGuiLibGrid....
 ##
 import os
@@ -33,7 +36,7 @@ import time
 ##
 ##
 ProgramName = "CountNumberOfDiCounters"
-Version = "version2018.10.04"  ## August 8, 2018
+Version = "version2020.07.09"  ## 2020Jul09
 
 
 ##############################################################################################
@@ -70,17 +73,16 @@ class countDiCounters(object):
     self.__whichDatabase = 'development'
     print("......__countDiCounters__::getFromDevelopmentDatabase... get from development database \n")
     self.__queryUrl = self.__database_config.getQueryUrl()
-    print("....__countDiCounters__::setupDevelopmentDatabase... self.__url =  %s") % self.__queryUrl
+    #print("....__countDiCounters__::setupDevelopmentDatabase... self.__url =  %s") % self.__queryUrl
 ##
 ## -------------------------------------------------------------------
 ##	Make querries to data base
   def setupProductionDatabase(self):
     self.__database = 'mu2e_hardware_prd'
-    #self.__group = "Extrusions Tables"
     self.__whichDatabase = 'production'
     print("...__countDiCounters__::setupProductionDatabase... get from production database \n")
     self.__queryUrl = self.__database_config.getProductionQueryUrl()
-    print("....__countDiCounters__::setupProductionDatabase... self.__url =  %s") % self.__queryUrl
+    #print("....__countDiCounters__::setupProductionDatabase... self.__url =  %s") % self.__queryUrl
 ## ---------------------------------------------------------------------------
   def countTheExtrusions(self):
     self.__getDatabaseValue = DataQuery(self.__queryUrl)
@@ -105,7 +107,7 @@ if __name__ == '__main__':
   modeString.append("The user may use a relative or absolute path to the spreadsheet")
   parser.add_option('-d',dest='debugMode',type='int',default=0,help='set debug: 0 (off - default), 1 = on')
   parser.add_option('-t',dest='testMode',type='int',default=0,help='set to test mode (do not send to database): 1')
-  parser.add_option('--database',dest='database',type='string',default="development",help='development or production')
+  parser.add_option('--database',dest='database',type='string',default="production",help='development or production')
   options, args = parser.parse_args()
 ##
   myDiCounters = countDiCounters()

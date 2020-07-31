@@ -62,6 +62,9 @@
 ##  Modified by cmj2019May16... Change "hdbClient_v2_0" to "hdbClient_v2_2"
 ##  Modified by cmj2019May23... Add update mode for modules...
 ##  Modified by cmj2019May23... Change default database to "production"
+##  Modified by cmj2020Jun12... Add Layout and SMB to GUI
+##  Modified by cmj2020Jul02... Change the CRV graphics library from  cmjGuiLibGrid2018Oct1 --to--> cmjGuiLibGrid2019Jan30
+##  Modified by cmj2020Jul14... Add progress bar..
 ##
 ##
 ##
@@ -80,15 +83,15 @@ from time import *
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
 sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
-sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list, 2020 fix file string.
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled list
+from cmjGuiLibGrid2019Jan30 import *
 from Modules import *
 
 ProgramName = "guiModules.py"
-Version = "version2018.10.04"
+Version = "version2020.07.02"
 
 ##
 ## -------------------------------------------------------------
@@ -140,7 +143,7 @@ class multiWindow(Frame):
     self.__myInstructions = myScrolledText(self)
     self.__myInstructions.setTextBoxWidth(50)
     self.__myInstructions.makeWidgets()
-    self.__myInstructions.setText('','Instructions/InstructionsForGuiModules2017Aug2.txt')
+    self.__myInstructions.setText('','Instructions/InstructionsForGuiModules2020Jul02.txt')
     self.__myInstructions.grid(row=self.__firstRow,column=self.__col,columnspan=2)
     self.__firstRow += 1
 ##
@@ -150,11 +153,15 @@ class multiWindow(Frame):
     self.__getValues = Button(self,text='Get Input File',command=self.openFileDialog,width=self.__buttonWidth,bg='lightblue',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
-##	Send initial Sipm information: PO number, batches recieved and vendor measurements...
-    self.__getValues = Button(self,text='Initial',command=self.startInitialEntries,width=self.__buttonWidth,bg='green',fg='black')
+##	Send Module Layout information to database...
+    self.__getValues = Button(self,text='Enter Module Layout',command=self.startLayout,width=self.__buttonWidth,bg='green',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
-    self.__getValues = Button(self,text='Tests',command=self.sendMeasurements,width=self.__buttonWidth,bg='green',fg='black')
+    ##	Send Module Smb/Cmb information to database... add Sipms...
+    self.__getValues = Button(self,text='Enter Module Smb/Cmb',command=self.startSmbCmb,width=self.__buttonWidth,bg='green',fg='black')
+    self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
+    self.__secondRow += 1
+    self.__getValues = Button(self,text='Enter Module Tests',command=self.sendMeasurements,width=self.__buttonWidth,bg='green',fg='black')
     self.__getValues.grid(row=self.__secondRow,column=self.__col,sticky=W)
     self.__secondRow += 1
 ###	Setup Debug option
@@ -209,9 +216,15 @@ class multiWindow(Frame):
 ##
 ## --------------------------------------------------------------------
 ##
-  def startInitialEntries(self):
-    self.__myModules.readFile("initial")
-    self.__myModules.sendInitialToDatabase()
+  def startLayout(self):
+    self.__myModules.readFileLayout("initial")
+    self.__myModules.sendLayoutToDatabase()
+    ##
+## --------------------------------------------------------------------
+##
+  def startSmbCmb(self):
+    self.__myModules.readFileSmbCmb("initial")
+    self.__myModules.sendSmbCmbToDatabase()
 ##
 ## --------------------------------------------------------------------
 ##
@@ -221,8 +234,13 @@ class multiWindow(Frame):
 ##
 ## --------------------------------------------------------------------
 ##
-  def turnOnDebug(self,tempDebug):
-    self.__myModules.turnOnDebug(tempDebug)
+  def turnOnDebug(self):
+    self.__myModules.turnOnDebug(1) 
+    ##
+## -------------------------------------------------------------------
+  def setDebugLevel(self,tempDebugLevel):
+    print("...multiWindow::getFromProductionDatabase... Set Debug Level to = %s \n") % (tempDebugLevel)
+    self.__myModules.turnOnDebug(tempDebugLevel)
 ## --------------------------------------------------------------------
   def turnOnSendToDatabase(self):
     self.__myModules.turnOnSendToDatabase()
@@ -235,6 +253,9 @@ class multiWindow(Frame):
 ## --------------------------------------------------------------------
   def sendToProductionDatabase(self):
     self.__myModules.sendToProductionDatabase()
+    ## --------------------------------------------------------------------
+  def setSleepTime(self,tempSleep):
+    self.__myModules.setSleepTime(tempSleep)
 ## --------------------------------------------------------------------
   def updateMode(self):
     print("__multiWindow__::updateMode.... UPDATE MODE!... update entries to database!")
@@ -246,6 +267,8 @@ if __name__ == '__main__':
   parser.add_option('-t',dest='testMode',type='int',default=0,help='set to test mode (do not send to database): 1')
   parser.add_option('--database',dest='database',type='string',default="production",help='development or production')
   parser.add_option('--update',dest='update',type='string',default="add",help='update to update entries')
+  parser.add_option('--debuglevel',dest='debugLevel',type='int',default=0,help='set debug: 0 (off - default), 1, 2, 3, ... ,10')
+  parser.add_option('--sleep',dest='sleepTime',type='float',default=1.0,help='set sleep interval between database operations (default= 1.0)')
   options, args = parser.parse_args()
   print("'__main__': options.debugMode = %s \n") % (options.debugMode)
   print("'__main__': options.testMode  = %s \n") % (options.testMode)
@@ -263,8 +286,10 @@ if __name__ == '__main__':
     myMultiForm.turnOnSendToDatabase()
     if(options.database == "development"): myMultiForm.sendToDevelopmentDatabase()
     else: myMultiForm.sendToProductionDatabase()
-  myMultiForm.grid()
-  root.mainloop()
+  if(options.debugLevel != 0): myMultiForm.setDebugLevel(options.debugLevel)
+  if(options.sleepTime != 1.0): myMultiForm.setSleepTime(options.sleepTime)
+  myMultiForm.grid()  ## define grid
+  root.mainloop()     ## run loop.
 
 
 

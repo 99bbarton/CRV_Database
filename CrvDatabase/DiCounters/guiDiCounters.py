@@ -59,6 +59,8 @@
 ##  Modified by cmj2018Apr27... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
+##  Modified by cmj2019May23... Change "hdbClient_v2_0" to "hdbClient_v2_2"
+##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities; cmjGuiLibGrid2018Oct1->cmjGuiLibGrid2019Jan30
 ##
 ##
 sendDataBase = 0  ## zero... don't send to database
@@ -75,16 +77,16 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Apr27
-sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Apr27
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled list
+from cmjGuiLibGrid2019Jan30 import *       ## 2020Jul09 
 from DiCounters import *
 
 ProgramName = "guiDiCounters.py"
-Version = "version2018.10.04"
+Version = "version2020.07.09"
 
 ##
 ## -------------------------------------------------------------
