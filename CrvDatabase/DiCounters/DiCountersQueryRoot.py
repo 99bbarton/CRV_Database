@@ -30,6 +30,9 @@
 ##  Modified by cmj2018Apr27... Change to hdbClient_v2_0
 ##  Modified by cmj2018Oct4.... Change the crvUtilities to contain version of cmjGuiLibGrid2018Oct1 that adds
 ##				yellow highlight to selected scrolled list items
+##  Modified by cmj2018Oct11.... Change to hdbClient_v2_2
+##  Modified by cmj2020Jul08... Change to cmjGuiLibGrid2019Jan30
+##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities;
 ##
 ##   Merrill Jenkins
 ##   Department of Physics
@@ -52,21 +55,19 @@ import optparse   ## parser module... to parse the command line arguments
 import math
 from collections import defaultdict
 from time import *
-
-#import ssl		## new for new version of DataLoader
-#import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_0/Dataloader.zip")  ## 2018Apr27
-sys.path.append("../CrvUtilities/crvUtilities2018.zip")      ## 2018Oct2 add highlight to scrolled list
+##
+sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Apr27
+sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
-from cmjGuiLibGrid2018Oct1 import *       ## 2018Oct2 add highlight to scrolled list
+from cmjGuiLibGrid2019Jan30 import *       ## 2020Jul09
 from DiCounters import *
 ##  Import for PyRoot
 from ROOT import TCanvas, TFile, TProfile, TNtuple, TH1F, TH2F, TGraph, TStyle, TTree, TString, TDirectory
 from ROOT import gROOT, gBenchmark, gRandom, gSystem, gStyle, Double, string, vector
 from array import array
 ProgramName = "DiCountersRootQuerry.py"
-Version = "version2018.10.04"
+Version = "version2020.09.09"
 ##
 ##
 ## -------------------------------------------------------------
@@ -85,22 +86,9 @@ class askDiCounter(object):
 ##
     self.__diCounterSipmLocation = {'A1':'A1','A2':'A2','A3':'A3','A4':'A4','B1':'B1','B2':'B2','B3':'B3','B4':'B4'}
     self.__diCounterSipms = ['A1','A2','A3','A4','B1','B2','B3','B4']
-    #self.__nestedDirectory = generalUtilities()
-    #self.__diCounterCurrent = self.__nestedDirectory.nestedDict()		## A nested dictionary to hold a dictionary that holds the
-								## current measured for the Sipm at some location on the di-counter
-								## the keys are [di-counter][[diCounterTestDate][diCounterSipmLocation]
-    #self.__diCounterDate = defaultdict(dict)			## Nested dictionary to hold the date of the tests (keys: [diCounterId][diCounterTestDate])
-    #self.__diCounterLightSource = defaultdict(dict)		## Nested dictionary to hold the test light result (keys: [diCounterId][diCounterTestDate])	
-    #self.__diCounterFlashRate = defaultdict(dict)		## Nested dictionary to hold the test light source flash rate (keys: [diCounterId][diCounterTestDate])
-    #self.__diCounterVoltage = defaultdict(dict)			## Nested dictionary to hold the voltage on the Sipm (keys: [diCounterId][diCounterTestDate])
-    #self.__diCounterTemperature = defaultdict(dict)		## Nested ictionary to hold the temperature the measurement is made (keys: [diCounterId][diCounterTestDate]))
-    #self.__diCounterLightSourceVector = defaultdict(dict)	## Nested dictionary to hold the side the measurement is made (keys: [diCounterId][diCounterTestDate]))
-    #self.__diCounterLightSourceDistance = defaultdict(dict)	## Nested dictionary to hold the distance from source measurement is made (keys: [diCounterId][diCounterTestDate]))
-    #self.__diCounterComment = defaultdict(dict)			## Nested dictionary to hold the comments on the test (keys: [diCounterId][diCounterTestDate])
     ## Dictionaries to hold the di-counter test results
     self.__diCounterId = {}	## key diCounterId+diCounterDate
     self.__diCounterTestDate = {}	## key diCounterId+diCounterDate
-    #self.__diCounterSipmPosition = {}    ## key diCounterId+diCounterDate
     self.__diCounterLightSource = {}	## key diCounterId+diCounterDate
     self.__diCounterFlashRate = {}	## key diCounterId+diCounterDate
     self.__diCounterVoltage = {}	## key diCounterId+diCounterDate
