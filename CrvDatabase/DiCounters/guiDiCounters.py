@@ -82,7 +82,7 @@ sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid2019Jan30 import *       ## 2020Jul09 
+from cmjGuiLibGrid import *       ## 2020Jul09 
 from DiCounters import *
 
 ProgramName = "guiDiCounters.py"

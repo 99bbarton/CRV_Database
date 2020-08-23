@@ -27,7 +27,7 @@ sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
-from cmjGuiLibGrid2019Jan30 import *
+from cmjGuiLibGrid import *
 from Modules import *
 #import SipmMeasurements
 ##
