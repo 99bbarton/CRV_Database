@@ -87,7 +87,7 @@ sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlig
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid2019Jan30 import *
+from cmjGuiLibGrid import *
 from Modules import *
 
 ProgramName = "guiModules.py"
