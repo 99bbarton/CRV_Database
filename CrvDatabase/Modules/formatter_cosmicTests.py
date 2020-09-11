@@ -69,7 +69,10 @@ def writeDicounterIDs(fileLines, dicounterInfo, moduleID):
                     diID = splitInfo[2]
                     break
                 
-            
+
+            if diID == "":
+                print "WARNING: Dicounter at layer " + str(pos_db[0]) + " and position in layer " + str(pos_db[1]) + " (in db coord syst) was not found"
+                
 
             outFile.write(diID + line[3:])
 
