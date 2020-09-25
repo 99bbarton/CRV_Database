@@ -86,8 +86,8 @@ class crvModules(object):
   def __init__(self):
     self.__cmjDebug = 10        ## no debug statements
     self.__sendToDatabase = 0  ## Do not send to database
-    self.__maxTries = 10		## set up maximum number of tries to send information to the database.
-    self.__sleepTime = 1.0  ##  time interval between database requests
+    self.__maxTries = 2		## set up maximum number of tries to send information to the database.
+    self.__sleepTime = 0.5  ##  time interval between database requests
     self.__update = 0		## update = 0, add new entry, update = 1, update existing entry.
     self.__database_config = databaseConfig()
     self.__url = ''
@@ -96,7 +96,7 @@ class crvModules(object):
     self.__password3 = '' ## for Electronics Tables
     self.__cmjDebug = 0   ## initialize without debugs
     ## List the corner case modules
-    self.__moduleCornerCaseId = [] #There are no corner cases due to non-staggered standard format
+    self.__moduleCornerCaseId = ['crvmod-101','crvmod-102','crvmod-103','crvmod-104','crvmod-105','crvmod-106','crvmod-107','crvmod-114','crvmod-115']
     self.__dummyCounter = 0 ## A dummy counter to give a unique id for the CmbId if it is a reflector or absorber
     ## Module Initial information
     self.__currentModuleId = ''		## For the one module per spreadsheet scheme... store the module id
@@ -150,7 +150,7 @@ class crvModules(object):
 ## -----------------------------------------------------------------
   def turnOnSendToDatabase(self):
     self.__sendToDatabase = 1      ## send to database
-    print("...crvModules::turnOnSendToDataBase... send to database: self.__sendToDatabase = %s \n",self.__sendToDatabase)
+    print("...crvModules::turnOnSendToDataBase... send to database: self.__sendToDatabase = %s \n") % (self.__sendToDatabase)
 ## -----------------------------------------------------------------
   def turnOffSendToDatabase(self):
     self.__sendToDatabase = 0      ## send to database
@@ -159,20 +159,30 @@ class crvModules(object):
   def sendToDevelopmentDatabase(self):
     self.__sendToDatabase = 1      ## send to database
     self.__whichDatabase = 'development'
+    if(self.__cmjDebug > 9): self.__database_config.setDebugOn()
     print("...crvModules::sendToDevelopmentDatabase... send to development database \n")
     self.__url = self.__database_config.getWriteUrl()
     self.__password = self.__database_config.getCompositeKey()
     self.__password2 = self.__database_config.getSipmKey()
     self.__password3 = self.__database_config.getElectronicsKey()
+    if(self.__cmjDebug > 9):
+      print("...crvModules::sendToDevelopmentDatabase... composite password  = xx%sxx") % self.__password
+      print("...crvModules::sendToDevelopmentDatabase... sipm password       = xx%sxx") % self.__password2
+      print("...crvModules::sendToDevelopmentDatabase... electronic password = xx%sxx") % self.__password3
 ## -----------------------------------------------------------------
   def sendToProductionDatabase(self):
     self.__sendToDatabase = 1      ## send to database
     self.__whichDatabase = 'production'
+    if(self.__cmjDebug > 9): self.__database_config.setDebugOn()
     print("...crvModules::sendToProductionDatabase... send to production database \n")
     self.__url = self.__database_config.getProductionWriteUrl()
     self.__password = self.__database_config.getCompositeProductionKey()
     self.__password2 = self.__database_config.getSipmProductionKey()
     self.__password3 = self.__database_config.getElectronicsProductionKey()
+    if(self.__cmjDebug > 9):
+      print("...crvModules::sendToProductionDatabase... composite password  = xx%sxx") % self.__password
+      print("...crvModules::sendToProductionDatabase... sipm password       = xx%sxx") % self.__password2
+      print("...crvModules::sendToProductionDatabase... electronic password = xx%sxx") % self.__password3
 ## ---------------------------------------------------------------
 ##  Change dataloader to update rather than insert.
   def updateMode(self):
@@ -654,7 +664,7 @@ class crvModules(object):
 		if(self.__cmjDebug > 1): 
 		  print("XXXX__crvModules__:writeCounterMotherBoards... Counter Transmission Failed: \n")
 		  print("XXXX__crvModules__:writeCounterMotherBoards... String sent to dataLoader: \n")
-		  print("XXXX__crvModules__:writeCounterMotherBoards... self.__diCounterString \%s \n") % (self.__diCounterString)
+		  print("XXXX__crvModules__:writeCounterMotherBoards... self.__localDiCounterId \%s \n") % (self.__localDiCounterId)
 		print ("XXXX__crvModules__:writeCounterMotherBoards... self.__code = %s \n") % (self.__code)
 		print ("XXXX__crvModules__:writeCounterMotherBoards... self.__text = %s \n") % (self.__text) 
 		self.__logFile.write("XXXX__crvModules__::writeCounterMotherBoards:  Counter Transmission: Failed!!!")
@@ -730,6 +740,7 @@ class crvModules(object):
 	    for n in range(0,self.__maxTries):
 	      (self.__retVal,self.__code,self.__text) = self.__myDataLoader1.send()  ## send it to the data base!
 	      print "(Number of tries = %s) self.__text = %s" % (n,self.__text)
+	      if(n == 0): print("XXXX __crvModules__::writeDiCounterSipms: self.__diCounterSipmString = %s") % (self.__diCounterSipmString)
 	      sleep(self.__sleepTime)     ## sleep so we don't send two records with the same timestamp....
 	      if self.__retVal:				## sucess!  data sent to database
 		print 'XXXX __crvModules__::writeDiCounterSipms: diCounterId: '+self.__localDiCounterId+' SipmId '+self.__localSipmId+' CmbId: '+self.__localCmbId+' CmbPosition '+self.__localCmbPosition+' Transmission Success!!!'
@@ -744,7 +755,7 @@ class crvModules(object):
 		if(self.__cmjDebug > 1): 
 		  print("XXXX__crvModules__::writeDiCounterSipms... Counter Transmission Failed: \n")
 		  print("XXXX__crvModules__::writeDiCounterSipms... String sent to dataLoader: \n")
-		  print("XXXX__crvModules__::writeDiCounterSipms... self.__diCounterString \%s \n") % (self.__diCounterString)
+		  print("XXXX__crvModules__::writeDiCounterSipms... self.__localDiCounterId \%s \n") % (self.__localDiCounterId)
 		print ("XXXX__crvModules__::writeDiCounterSipms... self.__code = %s \n") % (self.__code)
 		print ("XXXX__crvModules__::writeDiCounterSipms... self.__text = %s \n") % (self.__text) 
 		self.__logFile.write("XXXX__crvModules__::writeDiCounterSipms:  Counter Transmission: Failed!!!")
@@ -765,7 +776,7 @@ class crvModules(object):
 ## Diagnostic function to print out the dictionary for the dicounter connection string sent to database
   def dumpDiCounterSipmString(self):
     print("XXXX__crvModules__::dumpDiCounterSipmString... self.__diCounterString = %s \n") %(self.__diCounterSipmString)
-    print("XXXX__crvModules__::dumpDiCounterSipmString... self.__diCounterSipmUpdate['sipm_id'] = %s") %(self.__diCounterSipmUpdate['sipm_id'])
+    if(self.__diCounterSipmUpdate['sipm_id'].find('N/A') ==-1) : print("XXXX__crvModules__::dumpDiCounterSipmString... self.__diCounterSipmUpdate['sipm_id'] = %s") %(self.__diCounterSipmUpdate['sipm_id'])
     print("XXXX__crvModules__::dumpDiCounterSipmString... self.__diCounterSipmUpdate['cmb_id'] = %s") %(self.__diCounterSipmUpdate['cmb_id'])
     print("XXXX__crvModules__::dumpDiCounterSipmString... self.__diCounterSipmUpdate['cmb_position'] = %s") %(self.__diCounterSipmUpdate['cmb_position'])  
 ## -----------------------------------------------------------------
@@ -1363,7 +1374,8 @@ class crvModules(object):
     self.__item = []
     self.__item = tempLine.rsplit(',')
     if(self.__cmjDebug > 0): print("__crvModules::storeSmbNonStaggered__ ... Enter \n")
-    if(self.__cmjDebug > 9): print("__crvModules::storeSmbNonStaggered__ self.__item[0] = Layer = %s \n") % (self.__item[0])
+    if(self.__cmjDebug > 8): print("__crvModules::storeSmbNonStaggered__ self.__item[0] = Layer = %s \n") % (self.__item[0])
+    if(self.__cmjDebug > 9): print("__crvModules::storeSmbNonStaggered__ .self.__moduleDiCounterId = %s \n") % (self.__moduleDiCounterId)
     ##
     ##  Read Sipm Mother Board Ids' from the SMB spreadsheets.
     self.__tempLayer = 0
@@ -1716,6 +1728,7 @@ class crvModules(object):
     self.__item = tempLine.rsplit(',')
     self.__crvSipmBatch = "CrvSipm-S14283(ES2)_"
     if(self.__cmjDebug > 0): print("__crvModules::storeDicounterSipmIdNonStaggered__ ... Enter xx \n")  
+    if(self.__cmjDebug > 5): print("__crvModules::storeDicounterSipmIdNonStaggered__ ...  self.__moduleDiCounterId = %s \n") % (self.__moduleDiCounterId)
     ## --
     ##  Read Sipm Ids' from the SMB spreadsheets.
     #diCounterCellIncrement = 4
@@ -1806,6 +1819,8 @@ class crvModules(object):
     ## ------ Diagnostic output
     if(self.__cmjDebug > 4): 
       print("__crvModules::storeDicounterSipmIdNonStaggered__ \n")
+      print("__crvModules::storeDicounterSipmIdNonStaggered__ self.__moduleSipmToModuleLayer_dict = %s\n") %(self.__moduleSipmToModuleLayer_dict)
+      print("__crvModules::storeDicounterSipmIdNonStaggered__ self.__item[0] = xx%sxx\n") % (self.__item[0])
       mLayer = self.__moduleSipmToModuleLayer_dict[self.__item[0].strip()]
       nLayer = self.__moduleSipmToModuleLayerOneSide_dict[self.__item[0].strip()]
       print("__crvModules::storeDicounterSipmIdNonStaggered__ Layer = %s \n") %(nLayer)

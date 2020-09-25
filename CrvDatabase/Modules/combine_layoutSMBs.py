@@ -203,9 +203,9 @@ class ModuleElectronics:
                 if len(self.electronics.get(cols[0])) % 4 != 0: #There should be 4, 8, or 16 entries in a complete row, depending on type
 
 	                  if self.electronics.get(cols[0])[0] == "A"  or self.electronics.get(cols[0])[0] == "B":
-			                  self.electronics[cols[0]].pop(0)
-		                else:
-	       		            print "\nWARNING: " + cols[0] + " contains " + str(len(self.electronics.get(cols[0]))) + " entries"
+			      self.electronics[cols[0]].pop(0)
+		          else:
+	       		      print "\nWARNING: " + cols[0] + " contains " + str(len(self.electronics.get(cols[0]))) + " entries"
 		    
 
     #-----------------------------------------------------------------------------------------
