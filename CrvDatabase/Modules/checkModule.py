@@ -11,6 +11,7 @@
 ##				for dataloader... place the CRV utilities directory in the "crvUtilities" directory
 ##	Modified by cmj2019Feb28... Change the default database to production.
 ##   Modified by cmj2020Jul14... Add Progress bar
+##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
 ##
 #!/bin/env python
 from Tkinter import *         # get widget class
@@ -27,12 +28,12 @@ sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
-from cmjGuiLibGrid import *
+from cmjGuiLibGrid import *  ## cmj2020Aug03
 from Modules import *
 #import SipmMeasurements
 ##
 ProgramName = "checkModule.py"
-Version = "version2020.07.22"
+Version = "version2020.08.03"
 ##
 ##
 ##
