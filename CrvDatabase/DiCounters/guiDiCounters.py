@@ -61,6 +61,7 @@
 ##				yellow highlight to selected scrolled list items
 ##  Modified by cmj2019May23... Change "hdbClient_v2_0" to "hdbClient_v2_2"
 ##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities; cmjGuiLibGrid2018Oct1->cmjGuiLibGrid2019Jan30
+##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
 ##
 ##
 sendDataBase = 0  ## zero... don't send to database
@@ -82,11 +83,11 @@ sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid import *       ## 2020Jul09 
+from cmjGuiLibGrid import *       ## 2020Aug03
 from DiCounters import *
 
 ProgramName = "guiDiCounters.py"
-Version = "version2020.07.09"
+Version = "version2020.08.03"
 
 ##
 ## -------------------------------------------------------------
