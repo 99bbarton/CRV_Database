@@ -65,6 +65,7 @@
 ##  Modified by cmj2020Jun12... Add Layout and SMB to GUI
 ##  Modified by cmj2020Jul02... Change the CRV graphics library from  cmjGuiLibGrid2018Oct1 --to--> cmjGuiLibGrid2019Jan30
 ##  Modified by cmj2020Jul14... Add progress bar..
+##  Modified by cmj2020Aug03... cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
 ##
 ##
 ##
@@ -87,11 +88,11 @@ sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlig
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
-from cmjGuiLibGrid import *
+from cmjGuiLibGrid import *  ## cmj2020Aug03
 from Modules import *
 
 ProgramName = "guiModules.py"
-Version = "version2020.07.02"
+Version = "version2020.08.03"
 
 ##
 ## -------------------------------------------------------------
@@ -278,6 +279,7 @@ if __name__ == '__main__':
   root.title(bannerText)  
   root.geometry("+100+500")  ## set offset of primary window....
   myMultiForm = multiWindow(root,0,0)
+  if(options.debugLevel != 0): myMultiForm.setDebugLevel(options.debugLevel)
   if(options.update == "update"):  myMultiForm.updateMode()
   if(options.debugMode != 0): myMultiForm.turnOnDebug(options.debugMode)
   if(options.testMode != 0): 
@@ -286,7 +288,6 @@ if __name__ == '__main__':
     myMultiForm.turnOnSendToDatabase()
     if(options.database == "development"): myMultiForm.sendToDevelopmentDatabase()
     else: myMultiForm.sendToProductionDatabase()
-  if(options.debugLevel != 0): myMultiForm.setDebugLevel(options.debugLevel)
   if(options.sleepTime != 1.0): myMultiForm.setSleepTime(options.sleepTime)
   myMultiForm.grid()  ## define grid
   root.mainloop()     ## run loop.
