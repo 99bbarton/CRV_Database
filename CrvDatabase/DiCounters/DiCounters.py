@@ -66,6 +66,7 @@
 ##  Modified by cmj2019May23... Add a loop to give maxTries to send information to database.
 ##  Modified by cmj2019May23... Add a changeable value for the sleep interval as we have found it can be smaller.
 ##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities
+##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid (not used)
 ##
 ##
 ##
@@ -87,7 +88,7 @@ from databaseConfig import *
 from generalUtilities import generalUtilities
 
 ProgramName = "DiCounters"
-Version = "version2020.07.09"
+Version = "version2020.08.03"
 
 
 ##############################################################################################
