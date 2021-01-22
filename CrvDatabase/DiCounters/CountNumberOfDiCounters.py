@@ -17,15 +17,17 @@
 ##  Modified by cmj2019May16... Change default database to "production"
 ##  Modified by cmj2019May16... Change "hdbClient_v2_0" to "hdbClient_v2_2
 ##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities; cmjGuiLibGrid2018Oct1->cmjGuiLibGrid2019Jan30
+##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
+##  Modified by cmj2020Dec16... replace hdbClient_v2_2 with hdbClient_v3_3 - and (&) on query works
 ##
 #!/bin/env python
 from Tkinter import *         # get widget class
 import sys
-sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Apr27
+sys.path.append("../../Utilities/hdbClient_v3_3/Dataloader.zip")  ## 2020Dec16
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2020Jul09
 from DataLoader import *
 from databaseConfig import *
-from cmjGuiLibGrid2019Jan30 import *       ## 2020Jul09
+from cmjGuiLibGrid import *       ## 2020Aug03
 #rom scrollList import *  ## temp... import scroll list... afterwards include in cmjGuiLibGrid....
 ##
 import os
@@ -36,7 +38,7 @@ import time
 ##
 ##
 ProgramName = "CountNumberOfDiCounters"
-Version = "version2020.07.09"  ## 2020Jul09
+Version = "version2020.12.16"  ## 2020Jul09
 
 
 ##############################################################################################

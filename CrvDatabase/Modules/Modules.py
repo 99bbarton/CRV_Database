@@ -57,6 +57,7 @@
 ##  Modifeid by cmj2020Jul22... Add "corner-case" modules....
 ##  Modified by cmj2020Jul22... Add a module to set the "sleepTime" variable.
 ##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
+##  Modified by cmj2020Dec16... replace hdbClient_v2_2 with hdbClient_v3_3 - and (&) on query works
 ##
 ##
 ##
@@ -68,7 +69,7 @@ import optparse   ## parser module... to parse the command line arguments
 import math
 from collections import defaultdict
 from time import *
-sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../../Utilities/hdbClient_v3_3/Dataloader.zip")  ## 2020Dec16
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list, 2020 fix filename
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
@@ -76,7 +77,7 @@ from cmjGuiLibGrid import *       ## 2020Aug03
 from generalUtilities import generalUtilities
 
 ProgramName = "Modules.py"
-Version = "version2020.08.03"
+Version = "version2020.12.16"
 
 
 ##############################################################################################

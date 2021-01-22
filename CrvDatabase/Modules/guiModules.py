@@ -66,6 +66,7 @@
 ##  Modified by cmj2020Jul02... Change the CRV graphics library from  cmjGuiLibGrid2018Oct1 --to--> cmjGuiLibGrid2019Jan30
 ##  Modified by cmj2020Jul14... Add progress bar..
 ##  Modified by cmj2020Aug03... cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
+##  Modified by cmj2020Dec16... replace hdbClient_v2_2 with hdbClient_v3_3 - and (&) on query works
 ##
 ##
 ##
@@ -83,7 +84,7 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../../Utilities/hdbClient_v3_3/Dataloader.zip")  ## 2020Dec16
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list, 2020 fix file string.
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
@@ -92,7 +93,7 @@ from cmjGuiLibGrid import *  ## cmj2020Aug03
 from Modules import *
 
 ProgramName = "guiModules.py"
-Version = "version2020.08.03"
+Version = "version2020.12.16"
 
 ##
 ## -------------------------------------------------------------
