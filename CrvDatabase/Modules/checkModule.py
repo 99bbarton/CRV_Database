@@ -12,6 +12,7 @@
 ##	Modified by cmj2019Feb28... Change the default database to production.
 ##   Modified by cmj2020Jul14... Add Progress bar
 ##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
+##  Modified by cmj2020Dec16... replace hdbClient_v2_2 with hdbClient_v3_3 - and (&) on query works
 ##
 #!/bin/env python
 from Tkinter import *         # get widget class
@@ -24,7 +25,7 @@ import optparse   ## parser module... to parse the command line arguments
 import math
 from collections import defaultdict
 from time import *
-sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")
+sys.path.append("../../Utilities/hdbClient_v3_3/Dataloader.zip")  ## 2020Dec16
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
@@ -33,7 +34,7 @@ from Modules import *
 #import SipmMeasurements
 ##
 ProgramName = "checkModule.py"
-Version = "version2020.08.03"
+Version = "version2020.12.16"
 ##
 ##
 ##

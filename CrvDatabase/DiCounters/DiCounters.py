@@ -67,6 +67,7 @@
 ##  Modified by cmj2019May23... Add a changeable value for the sleep interval as we have found it can be smaller.
 ##  Modified by cmj2020Jul09... Change crvUtilities2018 -> crvUtilities
 ##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid (not used)
+##  Modified by cmj2020Dec16... replace hdbClient_v2_2 with hdbClient_v3_3 - and (&) on query works
 ##
 ##
 ##
@@ -81,14 +82,14 @@ from time import *
 
 #import ssl		## new for new version of DataLoader
 #import random		## new for new version of Dat##  File = "DiCounters_2017Mar13.py"aLoader
-sys.path.append("../../Utilities/hdbClient_v2_2/Dataloader.zip")  ## 2018Jun8
+sys.path.append("../../Utilities/hdbClient_v3_3/Dataloader.zip")  ## 2020Dec16
 sys.path.append("../CrvUtilities/crvUtilities.zip")      ## 2018Oct2 add highlight to scrolled list
 from DataLoader import *   ## module to read/write to database....
 from databaseConfig import *
 from generalUtilities import generalUtilities
 
 ProgramName = "DiCounters"
-Version = "version2020.08.03"
+Version = "version2020.12.16"
 
 
 ##############################################################################################
