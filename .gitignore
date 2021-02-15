@@ -12,3 +12,4 @@ Private/
 86CompositePro.txt
 86ElectronicsPro.txt
 86SipmPro.txt
+*.pyc
