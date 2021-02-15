@@ -59,7 +59,8 @@
 ##  Modified by cmj 2020Aug03 cmjGuiLibGrid2019Jan30 -> cmjGuiLibGrid
 ##  Modified by cmj2020Dec16... replace hdbClient_v2_2 with hdbClient_v3_3 - and (&) on query works
 ##
-##
+##  Modified by bt2021Feb15... implemented/corrected support for unstaggered module specifically typed "Downstream-short"
+##  
 ##
 sendDataBase = 0  ## zero... don't send to database
 #
@@ -311,7 +312,11 @@ class crvModules(object):
 	if (self.__newLine.find('Aluminum') != -1):		self.storeModuleAluminum(self.__newLine)
 	if (self.__newLine.find('Total_flatness_dev_mm') != -1): self.storeModuleFlat(self.__newLine)
 	if (self.__newLine.find('Comments') != -1): 		self.storeModuleComments(self.__newLine)
-	if (self.__newLine.find('layer') != -1): self.storeDicounterPosition(self.__newLine)
+	if (self.__newLine.find('layer') != -1): # Added if statements to check if module is staggered
+	  if (self.__moduleType == 'Downstream-short'):
+	    self.storeDicounterPositionNonStaggered(self.__newLine)
+	  else:
+	    self.storeDicounterPosition(self.__newLine)
       print 'Read in crvModules initial information'
     elif(tempInputMode == 'measure'):
       for self.__newLine in self.__fileLine:
@@ -896,37 +901,20 @@ class crvModules(object):
     self.__item = tempLayer.rsplit(',')
     ## Read from the layout spreadsheets
     tempDiCounterPosition = 0
-    lower = 0
-    upper = 13
     if(self.__item[0] == 'layer1'):
-      lower = 5
-      upper = 13
-      if(self.__moduleType == 'Downstream-short'):
-        lower = 2
-        upper = 10
-      for n in range(lower,upper):
+      for n in range(5,13):
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
     tempDiCounterPosition = 0
     if(self.__item[0] == 'layer2'):
-      lower = 4
-      upper = 12
-      if(self.__moduleType == 'Downstream-short'):
-        lower = 2
-        upper = 10
-      for n in range(lower,upper):
+      for n in range(4,12):
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
     tempDiCounterPosition = 0
     if(self.__item[0] == 'layer3'):
-      lower = 3
-      upper = 11
-      if(self.__moduleType == 'Downstream-short'):
-	lower = 2
-	upper = 10
-      for n in range(lower,upper):
+      for n in range(3,11):
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
@@ -1315,28 +1303,28 @@ class crvModules(object):
     tempDiCounterPosition = 0
     if(self.__item[0] == 'layer1'):
       #for n in range(5,13):
-      for n in range(0,8):
+      for n in range(2,10): # edited to be correct "non-stagger"
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
     tempDiCounterPosition = 0
     if(self.__item[0] == 'layer2'):
       #for n in range(4,12):
-      for n in range(0,8):
+      for n in range(2,10):
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
     tempDiCounterPosition = 0
     if(self.__item[0] == 'layer3'):
       #for n in range(3,11):
-      for n in range(0,8):
+      for n in range(2,10):
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
     tempDiCounterPosition = 0
     if(self.__item[0] == 'layer4'):
       #for n in range(2,10):
-      for n in range(0,8):
+      for n in range(2,10):
 	self.__moduleDiCounterPosition[self.__item[0]][tempDiCounterPosition] = tempDiCounterPosition
 	self.__moduleDiCounterId[self.__item[0]][tempDiCounterPosition] = 'di-'+self.__item[n].strip()
 	tempDiCounterPosition += 1
