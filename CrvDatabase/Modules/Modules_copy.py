@@ -113,6 +113,7 @@ class crvModules(object):
     self.__moduleAluminum  = ''
     self.__moduleDeviationFromFlat = ''
     self.__moduleComments = ''
+    self.__moduleStagger = True # Contains whether module is staggered or not
     ##					## The layer and position are contained in the di-counter tables....
     self.__moduleDiCounterPosition = defaultdict(dict)  ## Nested dictionary to hold the position and layer of a 
 							## DiCounter in the module....
@@ -313,10 +314,10 @@ class crvModules(object):
 	if (self.__newLine.find('Total_flatness_dev_mm') != -1): self.storeModuleFlat(self.__newLine)
 	if (self.__newLine.find('Comments') != -1): 		self.storeModuleComments(self.__newLine)
 	if (self.__newLine.find('layer') != -1): # Added if statements to check if module is staggered
-	  if (self.__moduleType == 'Downstream-short'):
-	    self.storeDicounterPositionNonStaggered(self.__newLine)
-	  else:
+	  if (self.__moduleStagger):
 	    self.storeDicounterPosition(self.__newLine)
+	  else:
+	    self.storeDicounterPositionNonStaggered(self.__newLine)
       print 'Read in crvModules initial information'
     elif(tempInputMode == 'measure'):
       for self.__newLine in self.__fileLine:
@@ -883,8 +884,13 @@ class crvModules(object):
   ## ----------------------------------
   def storeModuleComments(self,tempNewLine):
     self.__item =[]
+    self.__words = [] # to store comment sperated by spaces to test for stagger
     self.__item = tempNewLine.rsplit(',')
     self.__moduleComments = self.__item[1]
+    self.__words = self.__moduleComments.rsplit(' ')
+    for s in self.__words: # loop to check for 'non-staggered' in comments
+	if(s == 'non-staggered'):
+		self.__moduleStagger = False
     if (self.__moduleComments == ''): self.__moduleComments = 'No comment!'
     if(self.__cmjDebug > 0) : print("__ storeModuleComments__ self.__moduleComments = %s") % (self.__moduleComments)
 ## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
